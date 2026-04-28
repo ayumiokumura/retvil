@@ -1,11 +1,750 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Retvil</title>
+  <title>RetVillage | 那須の北欧レンガ調コテージ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg-dark: #1f2428;
+      --bg-light: #f5f1ea;
+      --accent: #c46b4a; /* レンガっぽい色 */
+      --accent-soft: #e0b89a;
+      --text-main: #2f3437;
+      --text-muted: #777;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--text-main);
+      background: var(--bg-light);
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    /* ヒーロー */
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: url("images/nasu-mountains.jpg") center/cover no-repeat fixed;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.55),
+        rgba(0, 0, 0, 0.75)
+      );
+    }
+
+    .hero__content {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+    }
+
+    .hero__logo-text {
+      font-size: clamp(3rem, 6vw, 4.5rem);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .hero__subtitle {
+      font-size: 0.95rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .hero__scroll {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .hero__scroll::after {
+      content: "";
+      display: block;
+      width: 1px;
+      height: 40px;
+      margin: 0.5rem auto 0;
+      background: #fff;
+      opacity: 0.7;
+    }
+
+    /* 固定ナビ */
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(31, 36, 40, 0.96);
+      color: #fff;
+      backdrop-filter: blur(10px);
+    }
+
+    .site-header__inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0.5rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .site-header__brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .site-header__brand-mark {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-soft));
+    }
+
+    .site-nav {
+      display: flex;
+      gap: 1.2rem;
+      font-size: 0.85rem;
+    }
+
+    .site-nav a {
+      position: relative;
+      padding-bottom: 0.25rem;
+    }
+
+    .site-nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 1px;
+      background: var(--accent-soft);
+      transition: width 0.2s ease;
+    }
+
+    .site-nav a:hover::after {
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .site-header__inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      .site-nav {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* セクション共通 */
+
+    .section {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+
+    .section--brick {
+      background:
+        linear-gradient(rgba(245, 241, 234, 0.9), rgba(245, 241, 234, 0.9)),
+        url("images/brick-texture.jpg") center/cover no-repeat;
+    }
+
+    .section__title {
+      font-size: 1.4rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .section__subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    /* 写真セクション */
+
+    .photos {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .photos__group-title {
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .photos__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .photos__item {
+      aspect-ratio: 4 / 3;
+      background: #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .photos__item-label {
+      position: absolute;
+      left: 0.75rem;
+      bottom: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(31, 36, 40, 0.75);
+      color: #fff;
+      border-radius: 999px;
+    }
+
+    /* 魅力（アコーディオン） */
+
+    .features {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .feature {
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+    }
+
+    .feature summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+    }
+
+    .feature summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .feature__title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .feature__index {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: #fff;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .feature__icon {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .feature__body {
+      padding: 0 1.25rem 1.25rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* 周辺施設・館内設備 */
+
+    .two-column {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2rem;
+    }
+
+    .card-list__title {
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-list__items {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .card {
+      padding: 0.9rem 1rem;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      font-size: 0.9rem;
+    }
+
+    .card__label {
+      font-size: 0.75rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+
+    .card__title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .card__text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* アクセス・オーナー・リンク */
+
+    .access__map {
+      margin-top: 1rem;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #ddd;
+      aspect-ratio: 16 / 9;
+    }
+
+    .owner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.5rem;
+    }
+
+    .owner__profile {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .owner__avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 999px;
+      background: #ccc;
+      overflow: hidden;
+    }
+
+    .owner__name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .owner__role {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .links__list {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .links__item a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background: #fff;
+      font-size: 0.9rem;
+    }
+
+    .links__badge {
+      font-size: 0.75rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    /* フッター */
+
+    .site-footer {
+      padding: 2rem 1.5rem 3rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to Retvil</h1>
-  <p>このサイトは GitHub Pages で公開されています。</p>
+
+  <!-- ヒーロー -->
+  <header class="hero" id="top">
+    <div class="hero__content">
+      <div class="hero__logo-text">RetVillage</div>
+      <div class="hero__subtitle">Nasu Highlands · Nordic Brick Retreat</div>
+    </div>
+    <div class="hero__scroll">Scroll</div>
+  </header>
+
+  <!-- 固定ナビ -->
+  <div class="site-header">
+    <div class="site-header__inner">
+      <div class="site-header__brand">
+        <span class="site-header__brand-mark"></span>
+        <span>RetVillage</span>
+      </div>
+      <nav class="site-nav">
+        <a href="#photos">写真</a>
+        <a href="#features">魅力</a>
+        <a href="#around">周辺施設</a>
+        <a href="#facilities">館内設備</a>
+        <a href="#access">アクセス</a>
+        <a href="#owner">オーナー紹介</a>
+        <a href="#links">リンク集</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- 写真 -->
+  <section class="section section--brick" id="photos">
+    <h2 class="section__title">Photos</h2>
+    <p class="section__subtitle">那須連峰と北欧レンガ調の空間を、写真でゆっくりと。</p>
+
+    <div class="photos">
+      <div>
+        <h3 class="photos__group-title">内観</h3>
+        <div class="photos__grid">
+          <div class="photos__item">
+            <!-- <img src="images/interior-1.jpg" alt="内観1"> -->
+            <span class="photos__item-label">Living</span>
+          </div>
+          <div class="photos__item">
+            <span class="photos__item-label">Dining</span>
+          </div>
+          <div class="photos__item">
+            <span class="photos__item-label">Bedroom</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="photos__group-title">外観</h3>
+        <div class="photos__grid">
+          <div class="photos__item">
+            <span class="photos__item-label">Facade</span>
+          </div>
+          <div class="photos__item">
+            <span class="photos__item-label">Garden</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="photos__group-title">アメニティ・設備</h3>
+        <div class="photos__grid">
+          <div class="photos__item">
+            <span class="photos__item-label">Amenity</span>
+          </div>
+          <div class="photos__item">
+            <span class="photos__item-label">Kitchen</span>
+          </div>
+          <div class="photos__item">
+            <span class="photos__item-label">Bath</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 魅力（こだわり） -->
+  <section class="section" id="features">
+    <h2 class="section__title">Features</h2>
+    <p class="section__subtitle">RetVillage が大切にしている、7つのこだわり。</p>
+
+    <div class="features">
+      <!-- 1〜7は後で中身を書き換え -->
+      <details class="feature" open>
+        <summary>
+          <div class="feature__title">
+            <span class="feature__index">1</span>
+            <span>那須連峰を望むロケーション</span>
+          </div>
+          <span class="feature__icon">＋</span>
+        </summary>
+        <div class="feature__body">
+          那須連峰を一望できる静かなエリアに位置し、朝夕で表情を変える山並みをゆっくりと楽しめます。
+        </div>
+      </details>
+
+      <details class="feature">
+        <summary>
+          <div class="feature__title">
+            <span class="feature__index">2</span>
+            <span>北欧×レンガ調のあたたかいデザイン</span>
+          </div>
+          <span class="feature__icon">＋</span>
+        </summary>
+        <div class="feature__body">
+          木の質感とレンガ調のアクセントを組み合わせた、北欧テイストの落ち着いた空間です。
+        </div>
+      </details>
+
+      <details class="feature">
+        <summary>
+          <div class="feature__title">
+            <span class="feature__index">3</span>
+            <span>ゆったり過ごせるリビング</span>
+          </div>
+          <span class="feature__icon">＋</span>
+        </summary>
+        <div class="feature__body">
+          家族や友人とくつろげる広めのリビングスペース。読書やボードゲームにもぴったりです。
+        </div>
+      </details>
+
+      <details class="feature">
+        <summary>
+          <div class="feature__title">
+            <span class="feature__index">4</span>
+            <span>こだわりの寝具と照明</span>
+          </div>
+          <span class="feature__icon">＋</span>
+        </summary>
+        <div class="feature__body">
+          一日の終わりを心地よく迎えられるよう、寝具や照明にもこだわっています。
+        </div>
+      </details>
+
+      <details class="feature">
+        <summary>
+          <div class="feature__title">
+            <span class="feature__index">5</span>
+            <span>自炊も楽しめるキッチン</span>
+          </div>
+          <span class="feature__icon">＋</span>
+        </summary>
+        <div class="feature__body">
+          調理器具や食器を揃えたキッチンで、地元食材を使った料理も楽しめます。
+        </div>
+      </details>
+
+      <details class="feature">
+        <summary>
+          <div class="feature__title">
+            <span class="feature__index">6</span>
+            <span>小さな遊び場とくつろぎスペース</span>
+          </div>
+          <span class="feature__icon">＋</span>
+        </summary>
+        <div class="feature__body">
+          子どもも大人も楽しめる、ちょっとした遊びスペースや読書コーナーを用意しています。
+        </div>
+      </details>
+
+      <details class="feature">
+        <summary>
+          <div class="feature__title">
+            <span class="feature__index">7</span>
+            <span>静けさを楽しむためのルール</span>
+          </div>
+          <span class="feature__icon">＋</span>
+        </summary>
+        <div class="feature__body">
+          周囲の環境とゲスト同士の時間を大切にするため、音や過ごし方に関する簡単なルールを設けています。
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 周辺施設 -->
+  <section class="section section--brick" id="around">
+    <h2 class="section__title">Around</h2>
+    <p class="section__subtitle">RetVillage 周辺で「遊ぶ」「観光する」スポット。</p>
+
+    <div class="two-column">
+      <div class="card-list">
+        <h3 class="card-list__title">遊ぶ</h3>
+        <div class="card-list__items">
+          <article class="card">
+            <div class="card__label">Play</div>
+            <div class="card__title">那須どうぶつ王国</div>
+            <p class="card__text">動物とのふれあいを楽しめる人気スポット。ファミリーにもおすすめです。</p>
+          </article>
+          <article class="card">
+            <div class="card__label">Play</div>
+            <div class="card__title">アクティビティ施設</div>
+            <p class="card__text">ジップラインやアスレチックなど、自然の中で体を動かせる施設が点在しています。</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="card-list">
+        <h3 class="card-list__title">観光する</h3>
+        <div class="card-list__items">
+          <article class="card">
+            <div class="card__label">Sightseeing</div>
+            <div class="card__title">那須ロープウェイ</div>
+            <p class="card__text">山頂からの景色を楽しめるロープウェイ。季節ごとの景観が魅力です。</p>
+          </article>
+          <article class="card">
+            <div class="card__label">Sightseeing</div>
+            <div class="card__title">美術館・カフェ</div>
+            <p class="card__text">静かに過ごせる美術館や、北欧テイストのカフェも周辺に点在しています。</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 館内設備 -->
+  <section class="section" id="facilities">
+    <h2 class="section__title">Facilities</h2>
+    <p class="section__subtitle">「遊ぶ」と「泊まる」を支える館内設備。</p>
+
+    <div class="two-column">
+      <div class="card-list">
+        <h3 class="card-list__title">遊ぶ</h3>
+        <div class="card-list__items">
+          <article class="card">
+            <div class="card__label">Play</div>
+            <div class="card__title">ボードゲーム・本</div>
+            <p class="card__text">雨の日でも楽しめるボードゲームや、ゆっくり読める本を揃えています。</p>
+          </article>
+          <article class="card">
+            <div class="card__label">Play</div>
+            <div class="card__title">小さなキッズスペース</div>
+            <p class="card__text">お子さま向けのおもちゃやスペースもご用意しています。</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="card-list">
+        <h3 class="card-list__title">泊まる</h3>
+        <div class="card-list__items">
+          <article class="card">
+            <div class="card__label">Stay</div>
+            <div class="card__title">寝室・ベッド</div>
+            <p class="card__text">ゆっくり休める寝具と、落ち着いた照明の寝室です。</p>
+          </article>
+          <article class="card">
+            <div class="card__label">Stay</div>
+            <div class="card__title">バス・トイレ・洗面</div>
+            <p class="card__text">清潔感のある水まわりと、必要なアメニティを揃えています。</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- アクセス -->
+  <section class="section section--brick" id="access">
+    <h2 class="section__title">Access</h2>
+    <p class="section__subtitle">那須高原エリアへのアクセス情報。</p>
+
+    <p>※実際の住所・アクセス方法はここに記載します。</p>
+    <ul style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted);">
+      <li>最寄りIC：那須IC から車で約◯分</li>
+      <li>最寄り駅：那須塩原駅からバス・タクシーで約◯分</li>
+      <li>駐車場：◯台分あり</li>
+    </ul>
+
+    <div class="access__map">
+      <!-- Google Maps 埋め込みなどをここに -->
+    </div>
+  </section>
+
+  <!-- オーナー紹介 -->
+  <section class="section" id="owner">
+    <h2 class="section__title">Owner</h2>
+    <p class="section__subtitle">RetVillage をつくった人。</p>
+
+    <div class="owner">
+      <div class="owner__profile">
+        <div class="owner__avatar">
+          <!-- <img src="images/owner.jpg" alt="オーナー写真"> -->
+        </div>
+        <div>
+          <div class="owner__name">オーナー名</div>
+          <div class="owner__role">RetVillage オーナー</div>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            那須の自然と、北欧の暮らし方が好きで、この場所をつくりました。ゆっくりと「何もしない時間」を楽しんでもらえたらうれしいです。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- リンク集 -->
+  <section class="section section--brick" id="links">
+    <h2 class="section__title">Links</h2>
+    <p class="section__subtitle">ご予約・最新情報はこちらから。</p>
+
+    <div class="links__list">
+      <div class="links__item">
+        <a href="#" target="_blank" rel="noopener">
+          <span class="links__badge">Airbnb</span>
+          <span>RetVillage の予約ページへ</span>
+        </a>
+      </div>
+      <div class="links__item">
+        <a href="#" target="_blank" rel="noopener">
+          <span class="links__badge">Instagram</span>
+          <span>写真で見る RetVillage</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div>© RetVillage, Nasu Highlands</div>
+  </footer>
+
 </body>
 </html>
