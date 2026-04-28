@@ -50,12 +50,21 @@ body {
   align-items: center;
   justify-content: center;
   text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  padding: 0 20px;
+  text-align: center;
 }
 
-.hero-text {
+.hero-text h1 {
   font-size: 4rem;
   color: #fff;
   letter-spacing: 0.25em;
+  margin-bottom: 20px;
+}
+
+.hero-message {
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1.8;
 }
 
 /* コンテンツ */
@@ -81,7 +90,24 @@ body {
   transform: translateY(0);
 }
 
-/* 写真 */
+/* 写真カテゴリ */
+.photo-block {
+  margin-bottom: 40px;
+}
+
+.photo-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.photo-line {
+  height: 2px;
+  background: #c46b4a;
+  margin-bottom: 20px;
+}
+
 .img {
   width: 100%;
   border-radius: 10px;
