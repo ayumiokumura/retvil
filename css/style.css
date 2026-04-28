@@ -96,3 +96,7 @@ body {
   backdrop-filter: blur(6px);
 }
 
+/* スクロール用スペース */
+.scroll-space {
+  height: 120vh;
+}
