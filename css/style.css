@@ -1,0 +1,74 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #f5f1ea;
+}
+
+/* ヒーロー */
+.hero {
+  height: 60vh;
+  background: url("../images/nasu.jpg") center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 3rem;
+  letter-spacing: 0.2em;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* 右側スライドメニュー */
+.side-menu {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+}
+
+.menu-item {
+  background: #1f2428;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  width: 40px;
+  transition: width 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.menu-item:hover {
+  width: 160px;
+}
+
+/* メイン画面 */
+.content {
+  padding: 40px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.section {
+  display: none;
+  animation: fade 0.4s ease;
+}
+
+.section.active {
+  display: block;
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 写真 */
+.sample-img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
