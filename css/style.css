@@ -7,14 +7,14 @@ body {
 
 @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
 
-/* ヘッダー */
+/* 共通ヘッダー */
 .header {
   position: fixed;
   top: 0;
   width: 100%;
   background: rgba(31, 36, 40, 0.85);
   color: #fff;
-  z-index: 20;
+  z-index: 100;
   backdrop-filter: blur(8px);
 }
 
@@ -44,6 +44,7 @@ body {
   justify-content: center;
   text-align: center;
   padding: 0 20px;
+  margin-top: 60px; /* ← ヘッダーと重ならないように */
 }
 
 .hero-title {
@@ -52,7 +53,6 @@ body {
   color: #fff;
   margin-bottom: 20px;
   z-index: 2;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
 
 .hero-message {
@@ -65,7 +65,6 @@ body {
   z-index: 2;
 }
 
-/* ロゴ（ぼかさない） */
 .hero-logo img {
   width: 180px;
   opacity: 0;
@@ -75,7 +74,7 @@ body {
   z-index: 2;
 }
 
-/* 背景ぼかしレイヤー（ロゴは対象外） */
+/* 背景ぼかし */
 .hero-fade-bg {
   position: absolute;
   inset: 0;
@@ -85,7 +84,6 @@ body {
   z-index: 0;
 }
 
-/* スクロール後の状態 */
 .show {
   opacity: 1 !important;
   transform: translateY(0) !important;
