@@ -5,10 +5,8 @@ body {
   color: #333;
 }
 
-/* 筆記体フォント */
 @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
 
-/* ヘッダー */
 .header {
   position: fixed;
   top: 0;
@@ -41,7 +39,6 @@ body {
   letter-spacing: 0.1em;
 }
 
-/* ヒーロー */
 .hero {
   height: 100vh;
   background: url("../images/nasu.jpg") center/cover no-repeat;
@@ -53,7 +50,6 @@ body {
   padding: 0 20px;
 }
 
-/* タイトル（筆記体＋小さめ） */
 .hero-title {
   font-family: 'Great Vibes', cursive;
   font-size: 3rem;
@@ -63,7 +59,6 @@ body {
   text-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
 
-/* 一言メッセージ（最初は非表示） */
 .hero-message {
   font-size: 1.1rem;
   line-height: 1.8;
@@ -74,7 +69,6 @@ body {
   z-index: 2;
 }
 
-/* ロゴ（最初は非表示） */
 .hero-logo img {
   width: 220px;
   opacity: 0;
@@ -84,24 +78,65 @@ body {
   z-index: 2;
 }
 
-/* 背景が白くぼやけるレイヤー */
 .hero-fade-bg {
   position: absolute;
   inset: 0;
   background: rgba(255,255,255,0);
   backdrop-filter: blur(0px);
   transition: 1.2s ease;
-  z-index: 1;
+  z-index: 0;
 }
 
-/* スクロール後に表示される状態 */
 .show {
   opacity: 1 !important;
   transform: translateY(0) !important;
 }
 
-/* スクロール後に背景が白くぼやける */
 .bg-blur {
   background: rgba(255,255,255,0.35);
   backdrop-filter: blur(6px);
+}
+
+.content {
+  padding: 120px 20px 60px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.section {
+  margin-bottom: 80px;
+}
+
+.fade {
+  opacity: 0;
+  transform: translateY(60px);
+  transition: 1s ease;
+}
+
+.fade.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.photo-block {
+  margin-bottom: 40px;
+}
+
+.photo-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.photo-line {
+  height: 2px;
+  background: #c46b4a;
+  margin-bottom: 20px;
+}
+
+.img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 20px;
 }
