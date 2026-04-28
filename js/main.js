@@ -1,4 +1,3 @@
-// スクロールで一言とロゴを表示
 window.addEventListener('scroll', () => {
   const trigger = window.innerHeight * 0.3;
 
@@ -9,7 +8,6 @@ window.addEventListener('scroll', () => {
   }
 });
 
-// スムーズスクロール（前のまま）
 document.querySelectorAll('.nav a').forEach(link => {
   link.addEventListener('click', e => {
     e.preventDefault();
@@ -18,3 +16,13 @@ document.querySelectorAll('.nav a').forEach(link => {
     window.scrollTo({ top, behavior: 'smooth' });
   });
 });
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('show');
+    }
+  });
+});
+
+document.querySelectorAll('.fade').forEach(el => observer.observe(el));
