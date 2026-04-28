@@ -2,69 +2,76 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>RetVillage</title>
+  <title>RetVillage | 那須の北欧レンガ調コテージ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<!-- ヒーロー -->
-<div class="hero">RetVillage</div>
-
-<!-- 右側スライドメニュー -->
-<div class="side-menu">
-  <div class="menu-item" data-target="photos">写真</div>
-  <div class="menu-item" data-target="features">魅力</div>
-  <div class="menu-item" data-target="around">周辺施設</div>
-  <div class="menu-item" data-target="facilities">館内設備</div>
-  <div class="menu-item" data-target="access">アクセス</div>
-  <div class="menu-item" data-target="owner">オーナー</div>
-  <div class="menu-item" data-target="links">リンク</div>
-</div>
-
-<!-- メインコンテンツ -->
-<div class="content">
-
-  <div id="photos" class="section active">
-    <h2>写真</h2>
-    <img src="images/interior.jpg" class="sample-img">
-    <img src="images/exterior.jpg" class="sample-img">
-    <img src="images/amenity.jpg" class="sample-img">
+<!-- ヘッダー（水平メニュー） -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">RetVillage</div>
+    <nav class="nav">
+      <a href="#photos">写真</a>
+      <a href="#features">魅力</a>
+      <a href="#around">周辺施設</a>
+      <a href="#facilities">館内設備</a>
+      <a href="#access">アクセス</a>
+      <a href="#owner">オーナー</a>
+      <a href="#links">リンク</a>
+    </nav>
   </div>
+</header>
 
-  <div id="features" class="section">
+<!-- ヒーロー -->
+<section class="hero">
+  <div class="hero-text">RetVillage</div>
+</section>
+
+<!-- コンテンツ -->
+<main class="content">
+
+  <section id="photos" class="section fade">
+    <h2>写真</h2>
+    <img src="images/interior.jpg" class="img">
+    <img src="images/exterior.jpg" class="img">
+    <img src="images/amenity.jpg" class="img">
+  </section>
+
+  <section id="features" class="section fade">
     <h2>魅力</h2>
     <p>7つのこだわりポイントをここに表示します。</p>
-  </div>
+  </section>
 
-  <div id="around" class="section">
+  <section id="around" class="section fade">
     <h2>周辺施設</h2>
     <p>遊ぶ・観光するスポットをここに表示します。</p>
-  </div>
+  </section>
 
-  <div id="facilities" class="section">
+  <section id="facilities" class="section fade">
     <h2>館内設備</h2>
     <p>遊ぶ・泊まる設備をここに表示します。</p>
-  </div>
+  </section>
 
-  <div id="access" class="section">
+  <section id="access" class="section fade">
     <h2>アクセス</h2>
     <p>住所・地図・交通情報をここに表示します。</p>
-  </div>
+  </section>
 
-  <div id="owner" class="section">
+  <section id="owner" class="section fade">
     <h2>オーナー紹介</h2>
-    <img src="images/owner.jpg" class="sample-img">
+    <img src="images/owner.jpg" class="img">
     <p>オーナーのプロフィールをここに表示します。</p>
-  </div>
+  </section>
 
-  <div id="links" class="section">
+  <section id="links" class="section fade">
     <h2>リンク集</h2>
     <p>Airbnb・Instagram などのリンクをここに表示します。</p>
-  </div>
+  </section>
 
-</div>
+</main>
 
 <script src="js/main.js"></script>
 </body>
