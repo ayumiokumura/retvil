@@ -9,10 +9,9 @@
 
 <body>
 
-<!-- ヘッダー（水平メニュー） -->
 <header class="header">
   <div class="header-inner">
-    <div class="logo">RetVillage</div>
+    <div class="logo-text">RetVillage</div>
     <nav class="nav">
       <a href="#photos">写真</a>
       <a href="#features">魅力</a>
@@ -27,73 +26,26 @@
 
 <!-- ヒーロー -->
 <section class="hero">
-  <div class="hero-text">
-    <h1>RetVillage</h1>
-    <p class="hero-message">
-      都会の喧騒から離れて<br>
-      静けさとあたたかさに包まれる場所<br>
-      RetVillage で、心を整える時間を
-    </p>
+  <h1 class="hero-title">RetVillage</h1>
+
+  <!-- スクロールで出てくる一言 -->
+  <p class="hero-message fade-late">
+    都会の喧騒から離れて<br>
+    静けさとあたたかさに包まれる場所<br>
+    RetVillage で、心を整える時間を
+  </p>
+
+  <!-- スクロールで出てくるロゴ -->
+  <div class="hero-logo fade-late">
+    <img src="images/logo.png" alt="RetVillage ロゴ">
   </div>
+
+  <!-- 背景ぼかしレイヤー -->
+  <div class="hero-fade-bg"></div>
 </section>
 
-<!-- コンテンツ -->
 <main class="content">
-
-  <!-- 写真 -->
-  <section id="photos" class="section fade">
-    <h2>写真</h2>
-
-    <div class="photo-block">
-      <div class="photo-title">内装</div>
-      <div class="photo-line"></div>
-      <img src="images/interior.jpg" class="img">
-    </div>
-
-    <div class="photo-block">
-      <div class="photo-title">外装</div>
-      <div class="photo-line"></div>
-      <img src="images/exterior.jpg" class="img">
-    </div>
-
-    <div class="photo-block">
-      <div class="photo-title">アメニティ・設備</div>
-      <div class="photo-line"></div>
-      <img src="images/amenity.jpg" class="img">
-    </div>
-  </section>
-
-  <section id="features" class="section fade">
-    <h2>魅力</h2>
-    <p>7つのこだわりポイントをここに表示します。</p>
-  </section>
-
-  <section id="around" class="section fade">
-    <h2>周辺施設</h2>
-    <p>遊ぶ・観光するスポットをここに表示します。</p>
-  </section>
-
-  <section id="facilities" class="section fade">
-    <h2>館内設備</h2>
-    <p>遊ぶ・泊まる設備をここに表示します。</p>
-  </section>
-
-  <section id="access" class="section fade">
-    <h2>アクセス</h2>
-    <p>住所・地図・交通情報をここに表示します。</p>
-  </section>
-
-  <section id="owner" class="section fade">
-    <h2>オーナー紹介</h2>
-    <img src="images/owner.jpg" class="img">
-    <p>オーナーのプロフィールをここに表示します。</p>
-  </section>
-
-  <section id="links" class="section fade">
-    <h2>リンク集</h2>
-    <p>Airbnb・Instagram などのリンクをここに表示します。</p>
-  </section>
-
+  <!-- 以下はそのまま -->
 </main>
 
 <script src="js/main.js"></script>
