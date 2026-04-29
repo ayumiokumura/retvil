@@ -85,6 +85,7 @@ body {
   opacity: 0;
   font-family: 'Zen Maru Gothic', sans-serif;
   font-size: 1rem;
+  font-weight: bold;
   line-height: 1.8;
   color: #1a1a1a;
   text-align: center;
@@ -126,8 +127,8 @@ body {
 }
 
 /* 写真ページ */
-.photo-block {
-  margin-bottom: 48px;
+.photo-section {
+  margin-bottom: 64px;
 }
 
 .photo-title {
@@ -140,16 +141,88 @@ body {
   width: 40px;
   height: 2px;
   background: #999;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
-.img {
-  width: 100%;
-  max-width: 640px;
-  height: auto;
-  display: block;
-  border-radius: 4px;
+/* カルーセル */
+.carousel {
+  position: relative;
+  overflow: hidden;
+  height: 420px;
+  background: #e8e4dc;
+  border-radius: 12px;
 }
+
+.carousel-item {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  left: 17.5%;
+  width: 65%;
+  opacity: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: left 0.45s ease, width 0.45s ease, opacity 0.45s ease;
+  z-index: 1;
+}
+
+.carousel-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-item.active {
+  left: 17.5%;
+  width: 65%;
+  opacity: 1;
+  z-index: 3;
+}
+
+.carousel-item.prev {
+  left: -20%;
+  width: 32%;
+  opacity: 0.65;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.carousel-item.next {
+  left: 88%;
+  width: 32%;
+  opacity: 0.65;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(31, 36, 40, 0.65);
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+  line-height: 1;
+}
+
+.carousel-btn:hover {
+  background: rgba(31, 36, 40, 0.9);
+}
+
+.carousel-btn.prev { left: 14px; }
+.carousel-btn.next { right: 14px; }
 
 /* 予約CTAボタン */
 .cta-float {
