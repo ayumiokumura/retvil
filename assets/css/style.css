@@ -96,9 +96,42 @@ body {
   backdrop-filter: blur(6px);
 }
 
+/* サブページ共通コンテンツ */
+.content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 100px 20px 60px;
+}
+
 /* スクロール用スペース */
 .scroll-space {
   height: 120vh;
+}
+
+/* 写真ページ */
+.photo-block {
+  margin-bottom: 48px;
+}
+
+.photo-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.photo-line {
+  width: 40px;
+  height: 2px;
+  background: #999;
+  margin-bottom: 12px;
+}
+
+.img {
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  display: block;
+  border-radius: 4px;
 }
 
 /* フッター */
