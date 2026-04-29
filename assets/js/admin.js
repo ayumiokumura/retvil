@@ -1,101 +1,207 @@
 // ============================================================
 //  Ret.Village 管理者ページ  —  admin.js
-//  パスワード変更: ADMIN_PASS の値を書き換えてください
+//  パスワード変更: ADMIN_PASS を書き換えてください
 // ============================================================
-const ADMIN_PASS = "nasu-admin";
+const ADMIN_PASS  = "nasu-admin";
 const SESSION_KEY = "rv_admin";
+const TOKEN_KEY   = "rv_token";
+const GH_OWNER    = "ayumiokumura";
+const GH_REPO     = "retvil";
+const GH_BRANCH   = "main";
 
 // ----------------------------------------------------------------
-// 写真データ（パス・説明・使用ページ）
+// 必須写真（差し替えのみ・削除不可）
 // ----------------------------------------------------------------
-const PHOTO_SECTIONS = [
-  {
-    title: "特別な写真（ヒーロー・ロゴ・オーナー）",
-    photos: [
-      { path: "assets/images/nasu.jpg",        desc: "トップページ 背景",              pages: "index.html" },
-      { path: "assets/images/logo.png",         desc: "ロゴ 丸アイコン（トップ画面）",  pages: "index.html" },
-      { path: "assets/images/owner_yumi.png",   desc: "オーナー YUMI の顔写真",         pages: "owner.html" },
-      { path: "assets/images/owner_mikio.png",  desc: "オーナー MIKIO の顔写真",        pages: "owner.html" },
-      { path: "assets/images/parking.JPG",      desc: "駐車場",                         pages: "facilities.html" },
-    ]
-  },
-  {
-    title: "内装 — 写真ページ",
-    photos: [
-      { path: "assets/images/interior/01_リビング_IMG_1851.JPG",    desc: "リビング (1)",    pages: "photos.html" },
-      { path: "assets/images/interior/01_リビング_IMG_1875.JPG",    desc: "リビング (2)",    pages: "photos.html" },
-      { path: "assets/images/interior/01_リビング_IMG_1824.JPG",    desc: "リビング (3)",    pages: "photos.html" },
-      { path: "assets/images/interior/01_リビング_IMG_1831.JPG",    desc: "リビング広角",    pages: "photos.html" },
-      { path: "assets/images/interior/02_キッチン_IMG_1870.JPG",    desc: "キッチン",        pages: "photos.html" },
-      { path: "assets/images/interior/03_暖炉_IMG_1898.JPG",        desc: "暖炉",            pages: "photos.html" },
-      { path: "assets/images/interior/04_ビールサーバー_IMG_1852.JPG", desc: "ビールサーバー", pages: "photos.html" },
-      { path: "assets/images/interior/05_和室_IMG_4104.JPG",        desc: "和室 (1)",        pages: "photos.html / facilities.html" },
-      { path: "assets/images/interior/05_和室_IMG_1885.JPG",        desc: "和室 (2)",        pages: "photos.html" },
-      { path: "assets/images/interior/05_和室_IMG_4158.JPG",        desc: "和室 (3)",        pages: "photos.html / facilities.html" },
-      { path: "assets/images/interior/06_ロフト_IMG_4228.JPG",      desc: "ロフト (1)",      pages: "photos.html" },
-      { path: "assets/images/interior/06_ロフト_IMG_1883.JPG",      desc: "ロフト (2)",      pages: "photos.html" },
-      { path: "assets/images/interior/07_洗面_IMG_1861.JPG",        desc: "洗面",            pages: "photos.html" },
-      { path: "assets/images/interior/08_バスルーム_IMG_4115.JPG",  desc: "バスルーム",      pages: "photos.html" },
-      { path: "assets/images/interior/09_インテリア_IMG_4067.JPG",  desc: "インテリア (1)",  pages: "photos.html" },
-      { path: "assets/images/interior/09_インテリア_IMG_4172.JPG",  desc: "インテリア (2)",  pages: "photos.html" },
-    ]
-  },
-  {
-    title: "外装 — 写真ページ",
-    photos: [
-      { path: "assets/images/exterior/01_全景_IMG_1866.JPG",           desc: "外観全景",     pages: "photos.html" },
-      { path: "assets/images/exterior/02_デッキ_IMG_1889.JPG",         desc: "デッキ",       pages: "photos.html" },
-      { path: "assets/images/exterior/02_デッキ_BBQ_IMG_1897.jpg",     desc: "デッキBBQ",    pages: "photos.html" },
-      { path: "assets/images/exterior/02_デッキ_遊び_IMG_1850.JPG",    desc: "外遊び",       pages: "photos.html" },
-      { path: "assets/images/exterior/03_BBQ小屋_IMG_1863.JPG",        desc: "いろり小屋",   pages: "photos.html" },
-      { path: "assets/images/exterior/04_看板_昼_IMG_4045.JPG",        desc: "看板（昼）",   pages: "photos.html" },
-      { path: "assets/images/exterior/04_看板_夜_IMG_4240.JPG",        desc: "看板（夜）",   pages: "photos.html" },
-      { path: "assets/images/exterior/05_雪景色_IMG_4277.JPG",         desc: "雪景色",       pages: "photos.html" },
-    ]
-  },
-  {
-    title: "アメニティ・設備 — 写真ページ",
-    photos: [
-      { path: "assets/images/amenity/01_キッチン_IMG_1872.JPG",             desc: "キッチン (1)",       pages: "photos.html" },
-      { path: "assets/images/amenity/01_キッチン_食器棚_IMG_4283.JPG",      desc: "食器棚",             pages: "photos.html" },
-      { path: "assets/images/amenity/01_キッチン_家電_IMG_4288.JPG",        desc: "キッチン家電",       pages: "photos.html" },
-      { path: "assets/images/amenity/02_バー_ビールサーバー_IMG_1853.JPG",  desc: "ビールサーバー",     pages: "photos.html" },
-      { path: "assets/images/amenity/02_バー_ワインセラー_IMG_1873.JPG",    desc: "ワインセラー",       pages: "photos.html" },
-      { path: "assets/images/amenity/02_バー_ワイングラス_IMG_4113.JPG",    desc: "ワイングラス",       pages: "photos.html" },
-      { path: "assets/images/amenity/03_BBQグリル_IMG_1880.JPG",            desc: "BBQグリル (1)",      pages: "photos.html" },
-      { path: "assets/images/amenity/03_BBQグリル_オープン_IMG_1882.JPG",   desc: "BBQグリル (2)",      pages: "photos.html" },
-      { path: "assets/images/amenity/03_BBQグリル_ツール_IMG_1826.JPG",     desc: "BBQツール",          pages: "photos.html" },
-      { path: "assets/images/amenity/04_BBQ小屋_炉_IMG_1823.JPG",           desc: "いろり小屋 炉",      pages: "photos.html" },
-      { path: "assets/images/amenity/04_BBQ小屋_夜_IMG_4122.JPG",           desc: "いろり小屋（夜）",   pages: "photos.html" },
-      { path: "assets/images/amenity/05_薪_IMG_1822.JPG",                   desc: "薪",                 pages: "photos.html" },
-      { path: "assets/images/amenity/06_暖炉_IMG_1898.jpg",                 desc: "暖炉",               pages: "photos.html" },
-      { path: "assets/images/amenity/07_洗面_ランドリー_IMG_1861.JPG",      desc: "洗面・ランドリー",   pages: "photos.html / facilities.html" },
-      { path: "assets/images/amenity/08_トイレ_IMG_1838.JPG",               desc: "トイレ",             pages: "photos.html / facilities.html" },
-      { path: "assets/images/amenity/09_お風呂_IMG_4115.JPG",               desc: "お風呂",             pages: "photos.html / facilities.html" },
-      { path: "assets/images/amenity/10_デッキ_昼_IMG_1890.JPG",            desc: "デッキ（昼）",       pages: "photos.html" },
-      { path: "assets/images/amenity/10_デッキ_夜_IMG_4117.JPG",            desc: "デッキ（夜）",       pages: "photos.html" },
-      { path: "assets/images/amenity/10_デッキ_夜外観_IMG_4150.JPG",        desc: "デッキ夜景",         pages: "photos.html" },
-      { path: "assets/images/amenity/11_ライトアップ_IMG_4128.JPG",         desc: "ライトアップ",       pages: "photos.html" },
-    ]
-  }
+const REQUIRED_PHOTOS = [
+  { path: "assets/images/nasu.jpg",        desc: "トップページ 背景",     pages: "index.html" },
+  { path: "assets/images/logo.png",        desc: "ロゴ（丸アイコン）",    pages: "index.html" },
+  { path: "assets/images/owner_yumi.png",  desc: "オーナー YUMI 顔写真",  pages: "owner.html" },
+  { path: "assets/images/owner_mikio.png", desc: "オーナー MIKIO 顔写真", pages: "owner.html" },
+  { path: "assets/images/parking.JPG",     desc: "駐車場",                pages: "facilities.html" },
 ];
 
 // ----------------------------------------------------------------
-// 初期化
+// ギャラリーセクション定義
 // ----------------------------------------------------------------
+const GALLERY_SECTIONS = [
+  { id: "interior", title: "内装",             folder: "assets/images/interior" },
+  { id: "exterior", title: "外装",             folder: "assets/images/exterior" },
+  { id: "amenity",  title: "アメニティ・設備",  folder: "assets/images/amenity"  },
+];
+
+// ================================================================
+// GitHub API
+// ================================================================
+
+function ghHeaders() {
+  return {
+    Authorization: `token ${localStorage.getItem(TOKEN_KEY) || ""}`,
+    Accept: "application/vnd.github.v3+json",
+    "Content-Type": "application/json",
+  };
+}
+
+function encodePath(path) {
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
+async function ghGet(path) {
+  const res = await fetch(
+    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodePath(path)}?ref=${GH_BRANCH}`,
+    { headers: ghHeaders() }
+  );
+  if (!res.ok) throw new Error(`${res.status}`);
+  return res.json();
+}
+
+async function ghPut(path, content64, message, sha = null) {
+  const body = { message, content: content64, branch: GH_BRANCH };
+  if (sha) body.sha = sha;
+  const res = await fetch(
+    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodePath(path)}`,
+    { method: "PUT", headers: ghHeaders(), body: JSON.stringify(body) }
+  );
+  if (!res.ok) {
+    const j = await res.json().catch(() => ({}));
+    throw new Error(j.message || res.status);
+  }
+  return res.json();
+}
+
+async function ghDel(path, sha, message) {
+  const res = await fetch(
+    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodePath(path)}`,
+    { method: "DELETE", headers: ghHeaders(), body: JSON.stringify({ message, sha, branch: GH_BRANCH }) }
+  );
+  if (!res.ok) {
+    const j = await res.json().catch(() => ({}));
+    throw new Error(j.message || res.status);
+  }
+  return res.json();
+}
+
+// ================================================================
+// 画像圧縮（最大1920px・JPEG 82%）
+// ================================================================
+
+function compressImage(file, maxPx = 1920, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const ratio  = Math.min(maxPx / img.width, maxPx / img.height, 1);
+      const canvas = document.createElement("canvas");
+      canvas.width  = Math.round(img.width  * ratio);
+      canvas.height = Math.round(img.height * ratio);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        const reader = new FileReader();
+        reader.onload = ev => resolve(ev.target.result.split(",")[1]);
+        reader.readAsDataURL(blob);
+      }, "image/jpeg", quality);
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+// ================================================================
+// photos.json 読み書き
+// ================================================================
+
+async function loadPhotosJson() {
+  try {
+    const data    = await ghGet("data/photos.json");
+    const content = JSON.parse(atob(data.content.replace(/\n/g, "")));
+    return { content, sha: data.sha };
+  } catch (err) {
+    if (err.message === "404") return { content: { sections: [] }, sha: null };
+    throw err;
+  }
+}
+
+async function savePhotosJson(content, sha, message) {
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+  return ghPut("data/photos.json", b64, message, sha);
+}
+
+// ================================================================
+// UI ヘルパー
+// ================================================================
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className   = "a-toast " + (isError ? "a-toast-err" : "a-toast-ok") + " a-toast-show";
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove("a-toast-show"), 3500);
+}
+
+function setBusy(btn, busy) {
+  if (busy) {
+    btn.dataset.orig = btn.textContent;
+    btn.textContent  = "処理中…";
+    btn.disabled     = true;
+  } else {
+    btn.textContent = btn.dataset.orig || btn.textContent;
+    btn.disabled    = false;
+  }
+}
+
+// ================================================================
+// ファイルピッカー
+// ================================================================
+
+const _picker = (() => {
+  const inp = document.createElement("input");
+  inp.type   = "file";
+  inp.accept = "image/*";
+  inp.style.display = "none";
+  document.body.appendChild(inp);
+  let _cb = null;
+  inp.addEventListener("change", () => {
+    const f = inp.files[0];
+    inp.value = "";
+    if (f && _cb) _cb(f);
+    _cb = null;
+  });
+  return cb => { _cb = cb; inp.click(); };
+})();
+
+// ================================================================
+// 初期化
+// ================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
-  if (sessionStorage.getItem(SESSION_KEY) === "1") {
+  if (sessionStorage.getItem(SESSION_KEY) === "1" && localStorage.getItem(TOKEN_KEY)) {
     showAdmin();
   }
 
-  document.getElementById("login-form").addEventListener("submit", (e) => {
+  document.getElementById("login-form").addEventListener("submit", async e => {
     e.preventDefault();
-    const pw = document.getElementById("admin-pw").value;
-    if (pw === ADMIN_PASS) {
+    const pw  = document.getElementById("admin-pw").value;
+    const tok = document.getElementById("admin-token").value.trim();
+    const err = document.getElementById("login-error");
+
+    if (pw !== ADMIN_PASS) { err.textContent = "パスワードが正しくありません"; return; }
+    if (!tok)              { err.textContent = "GitHub トークンを入力してください"; return; }
+
+    const btn = e.submitter;
+    setBusy(btn, true);
+    err.textContent = "";
+
+    try {
+      const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`, {
+        headers: { Authorization: `token ${tok}` }
+      });
+      if (!r.ok) throw new Error();
+      localStorage.setItem(TOKEN_KEY, tok);
       sessionStorage.setItem(SESSION_KEY, "1");
       showAdmin();
-    } else {
-      document.getElementById("login-error").textContent = "パスワードが正しくありません";
+    } catch {
+      err.textContent = "GitHub トークンが無効です。Scopeを確認してください。";
+      setBusy(btn, false);
     }
   });
 
@@ -107,77 +213,189 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function showAdmin() {
   document.getElementById("admin-login").style.display = "none";
-  document.getElementById("admin-main").style.display = "block";
-  renderPhotos();
+  document.getElementById("admin-main").style.display  = "block";
+  renderRequired();
+  renderGallery();
 }
 
-// ----------------------------------------------------------------
-// 写真グリッドのレンダリング
-// ----------------------------------------------------------------
-function renderPhotos() {
-  const container = document.getElementById("photo-container");
-  container.innerHTML = "";
+// ================================================================
+// 必須写真セクション
+// ================================================================
 
-  PHOTO_SECTIONS.forEach(section => {
-    const sec = document.createElement("div");
-    sec.className = "a-section";
-    sec.innerHTML = `<h2>${section.title}</h2>`;
+function renderRequired() {
+  const grid = document.getElementById("required-grid");
+  grid.innerHTML = "";
 
-    const grid = document.createElement("div");
-    grid.className = "a-grid";
-
-    section.photos.forEach(photo => {
-      const card = document.createElement("div");
-      card.className = "a-card";
-      card.innerHTML = `
-        <div class="a-img-wrap">
-          <img src="${photo.path}" alt="${photo.desc}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=a-no-img>画像なし</div>'">
+  REQUIRED_PHOTOS.forEach(photo => {
+    const card = document.createElement("div");
+    card.className = "a-card";
+    card.innerHTML = `
+      <div class="a-img-wrap">
+        <img src="${photo.path}?t=${Date.now()}" alt="${photo.desc}" loading="lazy"
+             onerror="this.parentElement.innerHTML='<div class=a-no-img>画像なし</div>'">
+      </div>
+      <div class="a-info">
+        <div class="a-desc">${photo.desc}</div>
+        <div class="a-pages">📄 ${photo.pages}</div>
+        <div class="a-actions">
+          <button class="a-btn-replace">差し替え</button>
         </div>
-        <div class="a-info">
-          <div class="a-desc">${photo.desc}</div>
-          <div class="a-pages">📄 ${photo.pages}</div>
-          <div class="a-path" title="${photo.path}">${photo.path}</div>
-          <div class="a-actions">
-            <button class="a-btn-preview" onclick="openPreview('${photo.path}', this)">写真を差し替える</button>
-          </div>
-        </div>
-      `;
-      grid.appendChild(card);
+      </div>
+    `;
+    const btn = card.querySelector(".a-btn-replace");
+    btn.addEventListener("click", () => {
+      _picker(async file => {
+        setBusy(btn, true);
+        try {
+          const content64 = await compressImage(file);
+          let sha = null;
+          try { sha = (await ghGet(photo.path)).sha; } catch {}
+          await ghPut(photo.path, content64, `Replace: ${photo.path}`, sha);
+          card.querySelector("img").src = photo.path + "?t=" + Date.now();
+          showToast("差し替え完了！（サイト反映まで約1分）");
+        } catch (err) {
+          showToast("エラー: " + err.message, true);
+        } finally {
+          setBusy(btn, false);
+        }
+      });
     });
-
-    sec.appendChild(grid);
-    container.appendChild(sec);
+    grid.appendChild(card);
   });
 }
 
-// ----------------------------------------------------------------
-// プレビューモーダル
-// ----------------------------------------------------------------
-let _currentPreviewPath = "";
+// ================================================================
+// ギャラリーセクション
+// ================================================================
 
-function openPreview(path, btn) {
-  _currentPreviewPath = path;
-  const input = document.getElementById("file-input");
-  input.value = "";
-  input.onchange = function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      document.getElementById("preview-current").src = path;
-      document.getElementById("preview-new").src = ev.target.result;
-      document.getElementById("preview-filename").textContent = file.name;
-      document.getElementById("preview-modal").style.display = "flex";
-    };
-    reader.readAsDataURL(file);
-  };
-  input.click();
+async function renderGallery() {
+  const container = document.getElementById("gallery-container");
+  container.innerHTML = "<div class='a-loading'>ギャラリーを読み込み中…</div>";
+
+  let photosData;
+  try {
+    photosData = (await loadPhotosJson()).content;
+  } catch (err) {
+    container.innerHTML = `<div class='a-err-msg'>読み込み失敗: ${err.message}</div>`;
+    return;
+  }
+
+  container.innerHTML = "";
+
+  GALLERY_SECTIONS.forEach(section => {
+    const sec     = photosData.sections.find(s => s.id === section.id) || { photos: [] };
+    const wrapper = document.createElement("div");
+    wrapper.className = "a-section";
+    wrapper.innerHTML = `
+      <div class="a-section-header">
+        <h2>${section.title}</h2>
+        <button class="a-btn-add">＋ 写真を追加</button>
+      </div>
+    `;
+    const grid = document.createElement("div");
+    grid.className = "a-grid";
+    grid.id = `grid-${section.id}`;
+
+    sec.photos.forEach(photo => grid.appendChild(makeGalleryCard(photo, section)));
+
+    wrapper.appendChild(grid);
+    container.appendChild(wrapper);
+
+    wrapper.querySelector(".a-btn-add").addEventListener("click", e => {
+      addPhotoFlow(section, e.currentTarget);
+    });
+  });
 }
 
-function closePreview() {
-  document.getElementById("preview-modal").style.display = "none";
+function makeGalleryCard(photo, section) {
+  const card = document.createElement("div");
+  card.className  = "a-card";
+  card.dataset.path = photo.path;
+  card.innerHTML = `
+    <div class="a-img-wrap">
+      <img src="${photo.path}" alt="${photo.alt || ""}" loading="lazy"
+           onerror="this.parentElement.innerHTML='<div class=a-no-img>画像なし</div>'">
+    </div>
+    <div class="a-info">
+      <div class="a-desc">${photo.alt || "（説明なし）"}</div>
+      <div class="a-actions">
+        <button class="a-btn-replace-sm">差し替え</button>
+        <button class="a-btn-delete">削除</button>
+      </div>
+    </div>
+  `;
+
+  card.querySelector(".a-btn-replace-sm").addEventListener("click", e => {
+    const btn = e.currentTarget;
+    _picker(async file => {
+      setBusy(btn, true);
+      try {
+        const content64 = await compressImage(file);
+        let sha = null;
+        try { sha = (await ghGet(photo.path)).sha; } catch {}
+        await ghPut(photo.path, content64, `Replace: ${photo.path}`, sha);
+        card.querySelector("img").src = photo.path + "?t=" + Date.now();
+        showToast("差し替え完了！（サイト反映まで約1分）");
+      } catch (err) {
+        showToast("エラー: " + err.message, true);
+      } finally {
+        setBusy(btn, false);
+      }
+    });
+  });
+
+  card.querySelector(".a-btn-delete").addEventListener("click", async e => {
+    const btn = e.currentTarget;
+    if (!confirm(`「${photo.alt || photo.path}」を削除しますか？`)) return;
+    setBusy(btn, true);
+    try {
+      const fileData = await ghGet(photo.path);
+      await ghDel(photo.path, fileData.sha, `Delete: ${photo.path}`);
+      const { content, sha } = await loadPhotosJson();
+      const s = content.sections.find(s => s.id === section.id);
+      if (s) s.photos = s.photos.filter(p => p.path !== photo.path);
+      await savePhotosJson(content, sha, `Remove from gallery: ${photo.path}`);
+      card.remove();
+      showToast("削除しました。（サイト反映まで約1分）");
+    } catch (err) {
+      showToast("エラー: " + err.message, true);
+      setBusy(btn, false);
+    }
+  });
+
+  return card;
 }
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closePreview();
-});
+async function addPhotoFlow(section, addBtn) {
+  _picker(async file => {
+    const alt = prompt("写真の説明を入力してください\n例：リビング、外観、BBQグリルなど", "");
+    if (alt === null) return;
+
+    setBusy(addBtn, true);
+    try {
+      const filename   = `${Date.now()}.jpg`;
+      const path       = `${section.folder}/${filename}`;
+      const content64  = await compressImage(file);
+      await ghPut(path, content64, `Add photo: ${section.id}/${filename}`);
+
+      const { content, sha } = await loadPhotosJson();
+      let s = content.sections.find(s => s.id === section.id);
+      if (!s) {
+        s = { id: section.id, title: section.title, photos: [] };
+        content.sections.push(s);
+      }
+      const newPhoto = { path, alt: alt.trim() };
+      s.photos.push(newPhoto);
+      await savePhotosJson(content, sha, `Add to gallery: ${section.id}/${filename}`);
+
+      document.getElementById(`grid-${section.id}`)
+              .appendChild(makeGalleryCard(newPhoto, section));
+
+      showToast("追加しました！（サイト反映まで約1分）");
+    } catch (err) {
+      showToast("エラー: " + err.message, true);
+    } finally {
+      setBusy(addBtn, false);
+    }
+  });
+}

@@ -1,0 +1,66 @@
+{
+  "sections": [
+    {
+      "id": "interior",
+      "title": "内装",
+      "photos": [
+        { "path": "assets/images/interior/01_リビング_IMG_1851.JPG",       "alt": "リビング" },
+        { "path": "assets/images/interior/01_リビング_IMG_1875.JPG",       "alt": "バーカウンター・TV" },
+        { "path": "assets/images/interior/01_リビング_IMG_1824.JPG",       "alt": "リビング" },
+        { "path": "assets/images/interior/01_リビング_IMG_1831.JPG",       "alt": "リビング広角" },
+        { "path": "assets/images/interior/02_キッチン_IMG_1870.JPG",       "alt": "キッチン" },
+        { "path": "assets/images/interior/03_暖炉_IMG_1898.JPG",           "alt": "暖炉" },
+        { "path": "assets/images/interior/04_ビールサーバー_IMG_1852.JPG", "alt": "ビールサーバー" },
+        { "path": "assets/images/interior/05_和室_IMG_4104.JPG",           "alt": "和室" },
+        { "path": "assets/images/interior/05_和室_IMG_1885.JPG",           "alt": "和室" },
+        { "path": "assets/images/interior/05_和室_IMG_4158.JPG",           "alt": "和室" },
+        { "path": "assets/images/interior/06_ロフト_IMG_4228.JPG",         "alt": "ロフト" },
+        { "path": "assets/images/interior/06_ロフト_IMG_1883.JPG",         "alt": "ロフト" },
+        { "path": "assets/images/interior/07_洗面_IMG_1861.JPG",           "alt": "洗面" },
+        { "path": "assets/images/interior/08_バスルーム_IMG_4115.JPG",     "alt": "バスルーム" },
+        { "path": "assets/images/interior/09_インテリア_IMG_4067.JPG",     "alt": "インテリア" },
+        { "path": "assets/images/interior/09_インテリア_IMG_4172.JPG",     "alt": "インテリア" }
+      ]
+    },
+    {
+      "id": "exterior",
+      "title": "外装",
+      "photos": [
+        { "path": "assets/images/exterior/01_全景_IMG_1866.JPG",        "alt": "外観全景" },
+        { "path": "assets/images/exterior/02_デッキ_IMG_1889.JPG",      "alt": "デッキ" },
+        { "path": "assets/images/exterior/02_デッキ_BBQ_IMG_1897.jpg",  "alt": "デッキBBQ" },
+        { "path": "assets/images/exterior/02_デッキ_遊び_IMG_1850.JPG", "alt": "外遊び" },
+        { "path": "assets/images/exterior/03_BBQ小屋_IMG_1863.JPG",     "alt": "BBQ小屋" },
+        { "path": "assets/images/exterior/04_看板_昼_IMG_4045.JPG",     "alt": "看板（昼）" },
+        { "path": "assets/images/exterior/04_看板_夜_IMG_4240.JPG",     "alt": "看板（夜）" },
+        { "path": "assets/images/exterior/05_雪景色_IMG_4277.JPG",      "alt": "雪景色" }
+      ]
+    },
+    {
+      "id": "amenity",
+      "title": "アメニティ・設備",
+      "photos": [
+        { "path": "assets/images/amenity/01_キッチン_IMG_1872.JPG",            "alt": "キッチン" },
+        { "path": "assets/images/amenity/01_キッチン_食器棚_IMG_4283.JPG",     "alt": "食器棚" },
+        { "path": "assets/images/amenity/01_キッチン_家電_IMG_4288.JPG",       "alt": "キッチン家電" },
+        { "path": "assets/images/amenity/02_バー_ビールサーバー_IMG_1853.JPG", "alt": "ビールサーバー" },
+        { "path": "assets/images/amenity/02_バー_ワインセラー_IMG_1873.JPG",   "alt": "ワインセラー" },
+        { "path": "assets/images/amenity/02_バー_ワイングラス_IMG_4113.JPG",   "alt": "ワイングラス" },
+        { "path": "assets/images/amenity/03_BBQグリル_IMG_1880.JPG",           "alt": "BBQグリル" },
+        { "path": "assets/images/amenity/03_BBQグリル_オープン_IMG_1882.JPG",  "alt": "BBQグリル" },
+        { "path": "assets/images/amenity/03_BBQグリル_ツール_IMG_1826.JPG",    "alt": "BBQツール" },
+        { "path": "assets/images/amenity/04_BBQ小屋_炉_IMG_1823.JPG",          "alt": "BBQ小屋 焚き火" },
+        { "path": "assets/images/amenity/04_BBQ小屋_夜_IMG_4122.JPG",          "alt": "BBQ小屋（夜）" },
+        { "path": "assets/images/amenity/05_薪_IMG_1822.JPG",                  "alt": "薪" },
+        { "path": "assets/images/amenity/06_暖炉_IMG_1898.jpg",                "alt": "暖炉" },
+        { "path": "assets/images/amenity/07_洗面_ランドリー_IMG_1861.JPG",     "alt": "洗面・ランドリー" },
+        { "path": "assets/images/amenity/08_トイレ_IMG_1838.JPG",              "alt": "トイレ" },
+        { "path": "assets/images/amenity/09_お風呂_IMG_4115.JPG",              "alt": "お風呂" },
+        { "path": "assets/images/amenity/10_デッキ_昼_IMG_1890.JPG",           "alt": "デッキ（昼）" },
+        { "path": "assets/images/amenity/10_デッキ_夜_IMG_4117.JPG",           "alt": "デッキ（夜）" },
+        { "path": "assets/images/amenity/10_デッキ_夜外観_IMG_4150.JPG",       "alt": "デッキ夜景" },
+        { "path": "assets/images/amenity/11_ライトアップ_IMG_4128.JPG",        "alt": "ライトアップ" }
+      ]
+    }
+  ]
+}
