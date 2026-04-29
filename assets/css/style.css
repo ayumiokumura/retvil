@@ -400,6 +400,14 @@ body {
   border-radius: 10px;
 }
 
+.facility-text {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.9;
+  color: #444;
+  margin: 0;
+}
+
 .facility-note {
   font-family: 'Zen Maru Gothic', sans-serif;
   font-size: 0.78rem;
