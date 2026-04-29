@@ -100,3 +100,44 @@ body {
 .scroll-space {
   height: 120vh;
 }
+
+/* フッター */
+.footer {
+  background: rgba(31, 36, 40, 0.92);
+  color: #ccc;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.footer-logo {
+  font-family: 'Great Vibes', cursive;
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.footer-nav {
+  margin-bottom: 20px;
+}
+
+.footer-nav a {
+  margin: 0 10px;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.footer-nav a:hover {
+  color: #fff;
+}
+
+.footer-copy {
+  font-size: 0.75rem;
+  color: #888;
+  margin: 0;
+}
