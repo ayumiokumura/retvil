@@ -58,6 +58,19 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
+    // タッチスワイプ
+    let touchStartX = 0;
+    carousel.addEventListener("touchstart", e => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    carousel.addEventListener("touchend", e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 40) {
+        cur = dx < 0 ? (cur + 1) % n : (cur - 1 + n) % n;
+        update();
+      }
+    }, { passive: true });
+
     update();
   });
 });

@@ -1,13 +1,42 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const load = (id, path) => {
+  const load = (id, path, callback) => {
     fetch(path)
       .then(res => res.text())
       .then(data => {
         document.getElementById(id).innerHTML = data;
+        if (callback) callback();
       });
   };
 
-  load("header-include", "partials/header.html");
+  load("header-include", "partials/header.html", () => {
+    const btn = document.getElementById("hamburger-btn");
+    const nav = document.getElementById("mobile-nav");
+    if (!btn || !nav) return;
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = nav.classList.toggle("open");
+      btn.classList.toggle("open", isOpen);
+      btn.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    nav.querySelectorAll("a").forEach(a => {
+      a.addEventListener("click", () => {
+        nav.classList.remove("open");
+        btn.classList.remove("open");
+        btn.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest("#header-include") && nav.classList.contains("open")) {
+        nav.classList.remove("open");
+        btn.classList.remove("open");
+        btn.setAttribute("aria-expanded", "false");
+      }
+    });
+  });
+
   load("footer-include", "partials/footer.html");
 
   fetch("partials/cta.html")
