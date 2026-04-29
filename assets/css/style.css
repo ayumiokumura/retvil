@@ -320,32 +320,45 @@ body {
 }
 
 /* 館内設備ページ */
-.checkinout-grid {
+.checkinout-bar {
   display: flex;
-  gap: 16px;
-  margin: 28px 0 40px;
+  align-items: center;
+  background: #1f2428;
+  border-radius: 10px;
+  padding: 14px 32px;
+  margin: 24px 0 36px;
 }
 
-.checkinout-card {
+.cio-item {
   flex: 1;
-  background: #1f2428;
-  color: #fff;
-  border-radius: 12px;
-  padding: 24px 20px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cio-item:last-child {
+  justify-content: flex-end;
+}
+
+.cio-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255,255,255,0.2);
+  margin: 0 32px;
+  flex-shrink: 0;
 }
 
 .cio-label {
   font-family: 'Bodoni Moda', 'Times New Roman', serif;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   color: #c8a87a;
-  letter-spacing: 0.18em;
-  margin-bottom: 10px;
+  letter-spacing: 0.16em;
 }
 
 .cio-time {
   font-family: 'Bodoni Moda', 'Times New Roman', serif;
-  font-size: 2.2rem;
+  font-size: 1.55rem;
+  color: #fff;
   letter-spacing: 0.04em;
 }
 
