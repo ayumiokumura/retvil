@@ -138,7 +138,6 @@ function renderPhotos() {
           <div class="a-pages">📄 ${photo.pages}</div>
           <div class="a-path" title="${photo.path}">${photo.path}</div>
           <div class="a-actions">
-            <button class="a-btn-copy" onclick="copyPath('${photo.path}', this)">パスをコピー</button>
             <button class="a-btn-preview" onclick="openPreview('${photo.path}', this)">テスト表示</button>
           </div>
         </div>
@@ -148,17 +147,6 @@ function renderPhotos() {
 
     sec.appendChild(grid);
     container.appendChild(sec);
-  });
-}
-
-// ----------------------------------------------------------------
-// パスのコピー
-// ----------------------------------------------------------------
-function copyPath(path, btn) {
-  navigator.clipboard.writeText(path).then(() => {
-    const orig = btn.textContent;
-    btn.textContent = "コピーしました✓";
-    setTimeout(() => { btn.textContent = orig; }, 1500);
   });
 }
 

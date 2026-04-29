@@ -100,12 +100,10 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .a-actions { display: flex; gap: 8px; margin-top: 10px; }
-    .a-btn-copy, .a-btn-preview {
+    .a-btn-preview {
       flex: 1; padding: 7px 4px; border: none; border-radius: 6px;
       font-size: .75rem; cursor: pointer; transition: background .2s;
     }
-    .a-btn-copy    { background: #f0ede8; color: #8B7355; }
-    .a-btn-copy:hover { background: #e5e0d8; }
     .a-btn-preview { background: #8B7355; color: #fff; }
     .a-btn-preview:hover { background: #6e5b42; }
 
@@ -184,8 +182,7 @@
       <h2>写真の差し替え方法</h2>
       <ol>
         <li>差し替えたい写真の「テスト表示」ボタンを押し、新しい画像ファイルを選択すると<strong>並べて確認</strong>できます。</li>
-        <li>「パスをコピー」で保存先パスをコピーしてください。</li>
-        <li>新しい画像ファイルを<strong>同じファイル名</strong>にリネームし、コピーしたパスと同じ場所に配置します。</li>
+        <li>新しい画像ファイルを<strong>同じファイル名</strong>にリネームし、カード下部に表示されているパスと同じ場所に配置します。</li>
         <li>GitHub リポジトリにプッシュすれば自動的にサイトへ反映されます（GitHub Pages の場合、数分かかります）。</li>
         <li>ファイル名を変える場合は、対応する HTML ファイル内の <code>src</code> 属性も合わせて変更してください。</li>
       </ol>
