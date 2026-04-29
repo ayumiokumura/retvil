@@ -318,6 +318,69 @@ body {
   background: rgba(255,255,255,0.28);
 }
 
+/* リンク集 */
+.links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 560px;
+}
+
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e0dbd3;
+  text-decoration: none;
+  color: #333;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.link-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.link-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: rgba(31,36,40,0.07);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.link-icon svg {
+  width: 22px;
+  height: 22px;
+  color: #1f2428;
+}
+
+.link-body {
+  flex: 1;
+}
+
+.link-title {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.link-desc {
+  font-size: 0.82rem;
+  color: #777;
+}
+
+.link-arrow {
+  font-size: 1.4rem;
+  color: #bbb;
+}
+
 /* フッター */
 .footer {
   background: rgba(31, 36, 40, 0.92);
