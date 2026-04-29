@@ -5,7 +5,7 @@ body {
   color: #333;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Bodoni+Moda:opsz@6..96&family=Zen+Maru+Gothic&display=swap');
 
 /* 共通ヘッダー */
 .header {
@@ -68,9 +68,10 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   margin: 0;
-  font-family: 'Great Vibes', cursive;
+  font-family: 'Bodoni Moda', 'Times New Roman', serif;
   font-size: 2.6rem;
-  color: #fff;
+  color: #1a1a1a;
+  text-shadow: 0 0 28px rgba(255,255,255,0.9), 0 0 10px rgba(255,255,255,0.6);
   z-index: 2;
   white-space: nowrap;
 }
@@ -82,9 +83,10 @@ body {
   transform: translateX(-50%) translateY(200px);
   margin: 0;
   opacity: 0;
+  font-family: 'Zen Maru Gothic', sans-serif;
   font-size: 1rem;
   line-height: 1.8;
-  color: #fff;
+  color: #1a1a1a;
   text-align: center;
   z-index: 2;
 }
@@ -99,8 +101,12 @@ body {
 }
 
 .hero-logo img {
-  width: 180px;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
   display: block;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.25);
 }
 
 /* 背景ぼかし */
@@ -154,6 +160,17 @@ body {
   background: rgba(31, 36, 40, 0.92);
   border-radius: 14px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  border-left: 5px solid #c8a87a;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cta-float.minimized {
+  cursor: pointer;
+}
+
+.cta-float.minimized .cta-link,
+.cta-float.minimized .cta-minimize {
+  pointer-events: none;
 }
 
 .cta-link {
@@ -184,27 +201,27 @@ body {
   color: #fff;
 }
 
-.cta-close {
+.cta-minimize {
   position: absolute;
-  top: -9px;
-  right: -9px;
-  width: 22px;
-  height: 22px;
-  background: #666;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  background: rgba(255,255,255,0.15);
   border: none;
   border-radius: 50%;
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
   padding: 0;
+  line-height: 1;
 }
 
-.cta-close:hover {
-  background: #888;
+.cta-minimize:hover {
+  background: rgba(255,255,255,0.28);
 }
 
 /* フッター */
