@@ -338,7 +338,13 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.feature-card.open .feature-header {
+  margin-bottom: 4px;
 }
 
 .feature-num {
@@ -365,6 +371,33 @@ body {
   font-size: 0.8rem;
   color: #999;
   margin: 0;
+}
+
+.feature-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.45s ease;
+  padding-top: 20px;
+}
+
+.feature-card.open .feature-body {
+  max-height: 4000px;
+}
+
+.feature-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #c8a87a;
+  border-bottom: 2px solid #c8a87a;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.3s ease;
+}
+
+.feature-card.open .feature-chevron {
+  transform: rotate(-135deg) translate(-2px, -2px);
 }
 
 .feature-body p {
