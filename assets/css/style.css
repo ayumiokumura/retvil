@@ -1250,13 +1250,15 @@ body {
     height: 300px;
   }
 
-  /* アクセス stat → 2×2 グリッド */
+  /* アクセス stat → 2×2 グリッド（grid に切り替えて padding overflow を防ぐ） */
   .access-stat-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
   .access-stat-card {
-    flex: 0 0 calc(50% - 5px);
     min-width: 0;
+    padding: 14px 16px;
   }
 
   /* フッターナビ折り返し */
@@ -1291,5 +1293,51 @@ body {
   .cio-item--right {
     border-top: none;
     border-left: 1px solid #ede9e1;
+  }
+
+  /* アクセスカード余白を縮小 */
+  .access-address-card {
+    padding: 18px 18px;
+    gap: 10px;
+  }
+
+  /* ページタイトル h2 */
+  .content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 18px;
+  }
+
+  /* リンクカード */
+  .link-card {
+    padding: 16px 18px;
+    gap: 12px;
+  }
+
+  /* フッター余白 */
+  .footer {
+    padding: 28px 16px;
+  }
+  .footer-logo {
+    font-size: 1.4rem;
+  }
+
+  /* 写真セクション余白 */
+  .photo-section {
+    margin-bottom: 40px;
+  }
+
+  /* spot カード */
+  .spot-card {
+    padding: 16px;
+  }
+
+  /* 施設写真の高さを縮小 */
+  .facility-photo-row img {
+    height: 120px;
+  }
+
+  /* iOS テキスト自動拡大防止 */
+  body {
+    -webkit-text-size-adjust: 100%;
   }
 }
