@@ -321,7 +321,8 @@ body {
 
 /* 館内設備ページ */
 .checkinout-bar {
-  display: flex;
+  display: inline-flex;
+  flex-direction: column;
   background: #fff;
   border-radius: 10px;
   border-top: 3px solid #c8a87a;
@@ -331,15 +332,14 @@ body {
 }
 
 .cio-item {
-  flex: 1;
-  padding: 20px 32px;
+  padding: 18px 40px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
 .cio-item--right {
-  border-left: 1px solid #ede9e1;
+  border-top: 1px solid #ede9e1;
 }
 
 .cio-label {
