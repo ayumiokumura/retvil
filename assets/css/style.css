@@ -319,6 +319,58 @@ body {
   background: rgba(255,255,255,0.28);
 }
 
+/* アクセスページ */
+.access-address-card {
+  background: #fff;
+  border-radius: 10px;
+  border-left: 4px solid #c8a87a;
+  padding: 24px 28px;
+  margin: 28px 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.access-name {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ede9e1;
+}
+
+.access-address-row {
+  display: flex;
+  gap: 20px;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.8;
+  color: #444;
+  align-items: flex-start;
+}
+
+.access-address-label {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: #c8a87a;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+  min-width: 52px;
+}
+
+.access-map {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+}
+
+.access-map iframe {
+  display: block;
+}
+
 /* 館内設備ページ */
 .checkinout-bar {
   display: inline-flex;
