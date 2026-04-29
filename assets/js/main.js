@@ -21,7 +21,7 @@ window.addEventListener('scroll', () => {
   // ロゴが少し遅れて上昇
   const p2 = ease(Math.min(Math.max((raw - 0.15) / 0.85, 0), 1));
   logo.style.opacity   = p2;
-  logo.style.transform = `translateX(-50%) translateY(${300 - p2 * 300}px)`;
+  logo.style.transform = `translateX(-50%) translateY(${300 - p2 * 240}px)`;
 
   // 背景が白ぼけ
   fadeBg.style.backdropFilter = `blur(${p * 6}px)`;

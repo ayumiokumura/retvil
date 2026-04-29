@@ -9,9 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   load("header-include", "partials/header.html", () => {
+    initHamburger();
+  });
+
+  function initHamburger() {
     const btn = document.getElementById("hamburger-btn");
     const nav = document.getElementById("mobile-nav");
-    if (!btn || !nav) return;
+    if (!btn || !nav) {
+      setTimeout(initHamburger, 30);
+      return;
+    }
 
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -35,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.setAttribute("aria-expanded", "false");
       }
     });
-  });
+  }
 
   load("footer-include", "partials/footer.html");
 
