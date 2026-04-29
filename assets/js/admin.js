@@ -138,7 +138,7 @@ function renderPhotos() {
           <div class="a-pages">📄 ${photo.pages}</div>
           <div class="a-path" title="${photo.path}">${photo.path}</div>
           <div class="a-actions">
-            <button class="a-btn-preview" onclick="openPreview('${photo.path}', this)">テスト表示</button>
+            <button class="a-btn-preview" onclick="openPreview('${photo.path}', this)">写真を差し替える</button>
           </div>
         </div>
       `;
