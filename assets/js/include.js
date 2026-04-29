@@ -20,26 +20,32 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    function openNav() {
+      nav.classList.add("open");
+      btn.classList.add("open");
+      btn.setAttribute("aria-expanded", "true");
+      nav.style.maxHeight = nav.scrollHeight + "px";
+    }
+
+    function closeNav() {
+      nav.classList.remove("open");
+      btn.classList.remove("open");
+      btn.setAttribute("aria-expanded", "false");
+      nav.style.maxHeight = "0";
+    }
+
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      const isOpen = nav.classList.toggle("open");
-      btn.classList.toggle("open", isOpen);
-      btn.setAttribute("aria-expanded", String(isOpen));
+      nav.classList.contains("open") ? closeNav() : openNav();
     });
 
     nav.querySelectorAll("a").forEach(a => {
-      a.addEventListener("click", () => {
-        nav.classList.remove("open");
-        btn.classList.remove("open");
-        btn.setAttribute("aria-expanded", "false");
-      });
+      a.addEventListener("click", () => closeNav());
     });
 
     document.addEventListener("click", (e) => {
       if (!e.target.closest("#header-include") && nav.classList.contains("open")) {
-        nav.classList.remove("open");
-        btn.classList.remove("open");
-        btn.setAttribute("aria-expanded", "false");
+        closeNav();
       }
     });
   }

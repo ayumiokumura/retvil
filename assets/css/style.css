@@ -1191,7 +1191,7 @@ body {
     border-top: 1px solid rgba(255,255,255,0.06);
   }
   .mobile-nav.open {
-    max-height: 440px;
+    max-height: 600px;
   }
   .mobile-nav a {
     display: block;
