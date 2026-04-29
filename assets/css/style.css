@@ -27,6 +27,13 @@ body {
   align-items: center;
 }
 
+.logo-text {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
 .nav a {
   margin-left: 20px;
   color: #fff;
@@ -136,6 +143,68 @@ body {
   height: auto;
   display: block;
   border-radius: 4px;
+}
+
+/* 予約CTAボタン */
+.cta-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  background: rgba(31, 36, 40, 0.92);
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+}
+
+.cta-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 22px;
+  text-decoration: none;
+  color: #fff;
+}
+
+.cta-link:hover {
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px;
+}
+
+.cta-icon {
+  width: 28px;
+  height: 28px;
+  color: #fff;
+}
+
+.cta-text {
+  font-size: 0.78rem;
+  text-align: center;
+  line-height: 1.5;
+  color: #fff;
+}
+
+.cta-close {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 22px;
+  height: 22px;
+  background: #666;
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.cta-close:hover {
+  background: #888;
 }
 
 /* フッター */
