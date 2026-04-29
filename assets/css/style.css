@@ -321,8 +321,15 @@ body {
 /* オーナー紹介 */
 .owner-grid {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: 48px;
   margin-top: 32px;
+}
+
+.owner-grid .owner-card {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .owner-card {
