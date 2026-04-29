@@ -319,6 +319,154 @@ body {
   background: rgba(255,255,255,0.28);
 }
 
+/* 館内設備ページ */
+.checkinout-grid {
+  display: flex;
+  gap: 16px;
+  margin: 28px 0 40px;
+}
+
+.checkinout-card {
+  flex: 1;
+  background: #1f2428;
+  color: #fff;
+  border-radius: 12px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.cio-label {
+  font-family: 'Bodoni Moda', 'Times New Roman', serif;
+  font-size: 0.75rem;
+  color: #c8a87a;
+  letter-spacing: 0.18em;
+  margin-bottom: 10px;
+}
+
+.cio-time {
+  font-family: 'Bodoni Moda', 'Times New Roman', serif;
+  font-size: 2.2rem;
+  letter-spacing: 0.04em;
+}
+
+.facility-section {
+  margin-bottom: 40px;
+}
+
+.facility-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin: 0 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #c8a87a;
+}
+
+.facility-with-photos {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.facility-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.facility-info ul {
+  padding-left: 20px;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.88rem;
+  line-height: 2;
+  color: #444;
+  margin: 0 0 10px;
+}
+
+.facility-photo-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+  width: 220px;
+}
+
+.facility-photo-row img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.facility-note {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.78rem;
+  color: #999;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.ac-list {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e8e3db;
+  background: #fff;
+}
+
+.ac-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.9rem;
+  color: #444;
+  border-bottom: 1px solid #f0ebe3;
+}
+
+.ac-item:last-child {
+  border-bottom: none;
+}
+
+.ac-count {
+  margin-left: auto;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.parking-info {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 0.9rem;
+  color: #444;
+  line-height: 1.9;
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px 24px;
+  border-left: 4px solid #c8a87a;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.parking-count {
+  font-family: 'Bodoni Moda', 'Times New Roman', serif;
+  font-size: 2.4rem;
+  color: #c8a87a;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .checkinout-grid { flex-direction: column; }
+  .facility-with-photos { flex-direction: column; }
+  .facility-photo-row {
+    flex-direction: row;
+    width: 100%;
+  }
+  .facility-photo-row img { flex: 1; width: 0; }
+}
+
 /* 魅力ページ */
 .feature-list {
   display: flex;
