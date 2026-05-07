@@ -38,6 +38,27 @@ const FACILITY_SECTIONS = [
 ];
 
 // ================================================================
+// 編集状態管理
+// ================================================================
+// キー: "gallery-interior" / "facility-bath" など
+const _ss = {};
+
+function gss(type, id) {
+  const k = `${type}-${id}`;
+  if (!_ss[k]) _ss[k] = { editing: false, photos: [], orig: [], toDelete: new Set() };
+  return _ss[k];
+}
+
+function anyEditing() {
+  return Object.values(_ss).some(s => s.editing);
+}
+
+// 編集中に離脱しようとしたら警告
+window.addEventListener('beforeunload', e => {
+  if (anyEditing()) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ================================================================
 // GitHub API
 // ================================================================
 
@@ -159,26 +180,6 @@ function setBusy(btn, busy) {
 }
 
 // ================================================================
-// ファイルピッカー
-// ================================================================
-
-const _picker = (() => {
-  const inp = document.createElement("input");
-  inp.type   = "file";
-  inp.accept = "image/*";
-  inp.style.display = "none";
-  document.body.appendChild(inp);
-  let _cb = null;
-  inp.addEventListener("change", () => {
-    const f = inp.files[0];
-    inp.value = "";
-    if (f && _cb) _cb(f);
-    _cb = null;
-  });
-  return cb => { _cb = cb; inp.click(); };
-})();
-
-// ================================================================
 // 初期化
 // ================================================================
 
@@ -229,7 +230,7 @@ function showAdmin() {
 }
 
 // ================================================================
-// 必須写真セクション
+// 必須写真セクション（差し替えのみ・変更なし）
 // ================================================================
 
 function renderRequired() {
@@ -254,7 +255,11 @@ function renderRequired() {
     `;
     const btn = card.querySelector(".a-btn-replace");
     btn.addEventListener("click", () => {
-      _picker(async file => {
+      const inp = document.createElement("input");
+      inp.type = "file"; inp.accept = "image/*";
+      inp.addEventListener("change", async () => {
+        const file = inp.files[0];
+        if (!file) return;
         setBusy(btn, true);
         try {
           const content64 = await compressImage(file);
@@ -269,9 +274,306 @@ function renderRequired() {
           setBusy(btn, false);
         }
       });
+      inp.click();
     });
     grid.appendChild(card);
   });
+}
+
+// ================================================================
+// セクション共通レンダリング
+// ================================================================
+
+function createSectionEl(type, section, initialPhotos, sec) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "a-section";
+
+  const state = gss(type, section.id);
+  state.photos = initialPhotos.map(p => ({ ...p }));
+  state.orig   = initialPhotos.map(p => ({ ...p }));
+  state.toDelete.clear();
+  state.editing = false;
+
+  // ── Header ──────────────────────────────────────────────────
+  const header = document.createElement("div");
+  header.className = "a-section-header";
+
+  const titleRow = document.createElement("div");
+  titleRow.className = "a-title-row";
+
+  const actionsEl = document.createElement("div");
+  actionsEl.className = "a-hdr-actions";
+
+  header.appendChild(titleRow);
+  header.appendChild(actionsEl);
+  wrapper.appendChild(header);
+
+  // Title: gallery sections get inline ✏️ editing, facility sections plain h2
+  if (type === "gallery") {
+    showTitleView(titleRow, sec, section);
+  } else {
+    titleRow.innerHTML = `<h2>${section.title}</h2>`;
+  }
+
+  // ── Grid ────────────────────────────────────────────────────
+  const grid = document.createElement("div");
+  grid.className = "a-grid";
+  wrapper.appendChild(grid);
+
+  refreshGrid(grid, state, type, section);
+  showIdleActions(actionsEl, wrapper, grid, state, type, section);
+
+  return wrapper;
+}
+
+// ── Idle / Edit action bars ──────────────────────────────────
+
+function showIdleActions(actionsEl, wrapper, grid, state, type, section) {
+  actionsEl.innerHTML = "";
+  const editBtn = document.createElement("button");
+  editBtn.className   = "a-btn-edit";
+  editBtn.textContent = "編集";
+  editBtn.addEventListener("click", () => enterEdit(actionsEl, wrapper, grid, state, type, section));
+  actionsEl.appendChild(editBtn);
+}
+
+function showEditActions(actionsEl, wrapper, grid, state, type, section) {
+  actionsEl.innerHTML = "";
+
+  const commitBtn = document.createElement("button");
+  commitBtn.className   = "a-btn-commit";
+  commitBtn.textContent = "決定";
+  commitBtn.addEventListener("click", () =>
+    commitChanges(actionsEl, wrapper, grid, state, type, section, commitBtn)
+  );
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.className   = "a-btn-cancel-edit";
+  cancelBtn.textContent = "キャンセル";
+  cancelBtn.addEventListener("click", () =>
+    cancelEdit(actionsEl, wrapper, grid, state, type, section)
+  );
+
+  actionsEl.appendChild(commitBtn);
+  actionsEl.appendChild(cancelBtn);
+}
+
+// ── Enter / Cancel / Commit ──────────────────────────────────
+
+function enterEdit(actionsEl, wrapper, grid, state, type, section) {
+  state.editing = true;
+  wrapper.classList.add("a-edit-mode");
+  showEditActions(actionsEl, wrapper, grid, state, type, section);
+  refreshGrid(grid, state, type, section);
+}
+
+function cancelEdit(actionsEl, wrapper, grid, state, type, section) {
+  state.photos.forEach(p => { if (p._previewUrl) URL.revokeObjectURL(p._previewUrl); });
+  state.photos   = state.orig.map(p => ({ ...p }));
+  state.toDelete.clear();
+  state.editing  = false;
+  wrapper.classList.remove("a-edit-mode");
+  showIdleActions(actionsEl, wrapper, grid, state, type, section);
+  refreshGrid(grid, state, type, section);
+}
+
+async function commitChanges(actionsEl, wrapper, grid, state, type, section, commitBtn) {
+  setBusy(commitBtn, true);
+
+  try {
+    const saved = [];
+    let uploadIdx = 0;
+    const newCount = state.photos.filter(p => p._isNew).length;
+
+    for (const photo of state.photos) {
+      if (photo._isNew) {
+        uploadIdx++;
+        if (newCount > 1) {
+          commitBtn.textContent = `アップロード中 ${uploadIdx}/${newCount}…`;
+        }
+        const ext = (photo._file.name.match(/\.[^.]+$/) || [".jpg"])[0].toLowerCase();
+        const fname = `${Date.now()}_${Math.random().toString(36).slice(2, 6)}${ext === ".jpg" || ext === ".jpeg" ? ".jpg" : ext}`;
+        const path  = `${section.folder}/${fname}`;
+        const b64   = await compressImage(photo._file);
+        await ghPut(path, b64, `Add: ${section.id}/${fname}`);
+        URL.revokeObjectURL(photo._previewUrl);
+        saved.push({ path, alt: photo.alt || "" });
+      } else {
+        saved.push({ path: photo.path, alt: photo.alt || "" });
+      }
+    }
+
+    // ギャラリーのみ: 削除対象ファイルを GitHub から消す
+    if (type === "gallery") {
+      for (const delPath of state.toDelete) {
+        try {
+          const fd = await ghGet(delPath);
+          await ghDel(delPath, fd.sha, `Delete: ${delPath}`);
+        } catch {}
+      }
+    }
+
+    // photos.json 更新
+    const { content, sha } = await loadPhotosJson();
+    if (type === "gallery") {
+      let s = content.sections.find(s => s.id === section.id);
+      if (!s) {
+        s = { id: section.id, title: section.title, title_en: section.title_en || "", photos: [] };
+        content.sections.push(s);
+      }
+      s.photos = saved;
+    } else {
+      if (!content.facility_sections) content.facility_sections = [];
+      let s = content.facility_sections.find(s => s.id === section.id);
+      if (!s) {
+        s = { id: section.id, title: section.title, photos: [] };
+        content.facility_sections.push(s);
+      }
+      s.photos = saved;
+    }
+    await savePhotosJson(content, sha, `Update ${type}: ${section.id}`);
+
+    // 状態を確定
+    state.photos  = saved.map(p => ({ ...p }));
+    state.orig    = saved.map(p => ({ ...p }));
+    state.toDelete.clear();
+    state.editing = false;
+    wrapper.classList.remove("a-edit-mode");
+    showIdleActions(actionsEl, wrapper, grid, state, type, section);
+    refreshGrid(grid, state, type, section);
+    showToast("保存しました！（サイト反映まで約1分）");
+
+  } catch (err) {
+    showToast("エラー: " + err.message, true);
+    setBusy(commitBtn, false);
+  }
+}
+
+// ================================================================
+// グリッド描画
+// ================================================================
+
+let _dragSrcIdx = -1;
+let _dragKey    = null;
+
+function refreshGrid(gridEl, state, type, section) {
+  gridEl.innerHTML = "";
+  state.photos.forEach((photo, idx) => {
+    gridEl.appendChild(makePhotoCard(photo, idx, state, gridEl, type, section));
+  });
+  if (state.editing) {
+    gridEl.appendChild(makeAddCard(state, gridEl, type, section));
+  }
+}
+
+function makePhotoCard(photo, idx, state, gridEl, type, section) {
+  const card = document.createElement("div");
+  card.className = "a-card" + (state.editing ? " a-editing" : "");
+
+  const imgWrap = document.createElement("div");
+  imgWrap.className = "a-img-wrap";
+
+  const img = document.createElement("img");
+  img.src     = photo._previewUrl || photo.path;
+  img.alt     = photo.alt || "";
+  img.loading = "lazy";
+  img.onerror = () => { imgWrap.innerHTML = '<div class="a-no-img">画像なし</div>'; };
+  imgWrap.appendChild(img);
+  card.appendChild(imgWrap);
+
+  const info = document.createElement("div");
+  info.className = "a-info";
+  const desc = document.createElement("div");
+  desc.className   = "a-desc";
+  desc.textContent = photo.alt || "（説明なし）";
+  info.appendChild(desc);
+  card.appendChild(info);
+
+  if (state.editing) {
+    // 削除ボタン（カード左上）
+    const delBtn = document.createElement("button");
+    delBtn.className = "a-card-del";
+    delBtn.innerHTML = "&times;";
+    delBtn.title     = "削除";
+    delBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      if (photo._isNew) {
+        URL.revokeObjectURL(photo._previewUrl);
+      } else if (type === "gallery") {
+        state.toDelete.add(photo.path);
+      }
+      state.photos.splice(idx, 1);
+      refreshGrid(gridEl, state, type, section);
+    });
+    imgWrap.appendChild(delBtn);
+
+    // ドラッグハンドル（カード右上）
+    const handle = document.createElement("div");
+    handle.className   = "a-drag-handle";
+    handle.textContent = "⠿";
+    imgWrap.appendChild(handle);
+
+    // ドラッグ&ドロップ
+    const key = `${type}-${section.id}`;
+    card.setAttribute("draggable", "true");
+
+    card.addEventListener("dragstart", e => {
+      _dragSrcIdx = idx;
+      _dragKey    = key;
+      card.classList.add("a-dragging");
+      e.dataTransfer.effectAllowed = "move";
+    });
+    card.addEventListener("dragend", () => {
+      card.classList.remove("a-dragging");
+    });
+    card.addEventListener("dragover", e => {
+      if (_dragKey !== key || _dragSrcIdx === idx) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      card.classList.add("a-drag-over");
+    });
+    card.addEventListener("dragleave", () => {
+      card.classList.remove("a-drag-over");
+    });
+    card.addEventListener("drop", e => {
+      e.preventDefault();
+      card.classList.remove("a-drag-over");
+      if (_dragKey !== key || _dragSrcIdx < 0 || _dragSrcIdx === idx) return;
+      const [moved] = state.photos.splice(_dragSrcIdx, 1);
+      state.photos.splice(idx, 0, moved);
+      _dragSrcIdx = -1;
+      refreshGrid(gridEl, state, type, section);
+    });
+  }
+
+  return card;
+}
+
+function makeAddCard(state, gridEl, type, section) {
+  const card = document.createElement("div");
+  card.className = "a-card a-add-card";
+  card.innerHTML  = '<span class="a-add-icon">＋</span>';
+
+  const inp = document.createElement("input");
+  inp.type     = "file";
+  inp.accept   = "image/*";
+  inp.multiple = true;
+  inp.style.display = "none";
+  card.appendChild(inp);
+
+  card.addEventListener("click", () => inp.click());
+  inp.addEventListener("change", () => {
+    const files = Array.from(inp.files);
+    inp.value = "";
+    files.forEach(file => {
+      const previewUrl = URL.createObjectURL(file);
+      const alt = file.name.replace(/\.[^.]+$/, "");
+      state.photos.push({ path: "", alt, _isNew: true, _file: file, _previewUrl: previewUrl });
+    });
+    refreshGrid(gridEl, state, type, section);
+  });
+
+  return card;
 }
 
 // ================================================================
@@ -294,129 +596,9 @@ async function renderFacilities() {
   const facilitySections = photosData.facility_sections || [];
 
   FACILITY_SECTIONS.forEach(section => {
-    const sec     = facilitySections.find(s => s.id === section.id) || { photos: [] };
-    const wrapper = document.createElement("div");
-    wrapper.className = "a-section";
-    wrapper.innerHTML = `
-      <div class="a-section-header">
-        <h2>${section.title}</h2>
-        <button class="a-btn-add">＋ 写真を追加</button>
-      </div>
-    `;
-    const grid = document.createElement("div");
-    grid.className = "a-grid";
-    grid.id = `fac-grid-${section.id}`;
-
-    sec.photos.forEach(photo => grid.appendChild(makeFacilityCard(photo, section)));
-
-    wrapper.appendChild(grid);
-    container.appendChild(wrapper);
-
-    wrapper.querySelector(".a-btn-add").addEventListener("click", e => {
-      addFacilityPhotoFlow(section, e.currentTarget);
-    });
-  });
-}
-
-function makeFacilityCard(photo, section) {
-  const card = document.createElement("div");
-  card.className   = "a-card";
-  card.dataset.path = photo.path;
-  card.innerHTML = `
-    <div class="a-img-wrap">
-      <img src="${photo.path}" alt="${photo.alt || ""}" loading="lazy"
-           onerror="this.parentElement.innerHTML='<div class=a-no-img>画像なし</div>'">
-    </div>
-    <div class="a-info">
-      <div class="a-desc">${photo.alt || "（説明なし）"}</div>
-      <div class="a-actions">
-        <button class="a-btn-replace-sm">差し替え</button>
-        <button class="a-btn-delete">削除</button>
-      </div>
-    </div>
-  `;
-
-  card.querySelector(".a-btn-replace-sm").addEventListener("click", e => {
-    const btn = e.currentTarget;
-    _picker(async file => {
-      setBusy(btn, true);
-      try {
-        const filename  = `${Date.now()}.jpg`;
-        const newPath   = `${section.folder}/${filename}`;
-        const content64 = await compressImage(file);
-        await ghPut(newPath, content64, `Replace facility photo: ${section.id}/${filename}`);
-
-        const { content, sha } = await loadPhotosJson();
-        if (!content.facility_sections) content.facility_sections = [];
-        const s = content.facility_sections.find(s => s.id === section.id);
-        if (s) {
-          const p = s.photos.find(p => p.path === photo.path);
-          if (p) { p.path = newPath; photo.path = newPath; }
-        }
-        await savePhotosJson(content, sha, `Replace facility photo: ${section.id}`);
-        card.querySelector("img").src = newPath + "?t=" + Date.now();
-        showToast("差し替え完了！（サイト反映まで約1分）");
-      } catch (err) {
-        showToast("エラー: " + err.message, true);
-      } finally {
-        setBusy(btn, false);
-      }
-    });
-  });
-
-  card.querySelector(".a-btn-delete").addEventListener("click", async e => {
-    const btn = e.currentTarget;
-    if (!confirm(`「${photo.alt || photo.path}」を削除しますか？\n（ファイルは保持されます）`)) return;
-    setBusy(btn, true);
-    try {
-      const { content, sha } = await loadPhotosJson();
-      if (!content.facility_sections) content.facility_sections = [];
-      const s = content.facility_sections.find(s => s.id === section.id);
-      if (s) s.photos = s.photos.filter(p => p.path !== photo.path);
-      await savePhotosJson(content, sha, `Remove from facility: ${photo.path}`);
-      card.remove();
-      showToast("削除しました。（サイト反映まで約1分）");
-    } catch (err) {
-      showToast("エラー: " + err.message, true);
-      setBusy(btn, false);
-    }
-  });
-
-  return card;
-}
-
-async function addFacilityPhotoFlow(section, addBtn) {
-  _picker(async file => {
-    const alt = prompt("写真の説明を入力してください\n例：浴室、洗面台、駐車場など", "");
-    if (alt === null) return;
-
-    setBusy(addBtn, true);
-    try {
-      const filename  = `${Date.now()}.jpg`;
-      const path      = `${section.folder}/${filename}`;
-      const content64 = await compressImage(file);
-      await ghPut(path, content64, `Add facility photo: ${section.id}/${filename}`);
-
-      const { content, sha } = await loadPhotosJson();
-      if (!content.facility_sections) content.facility_sections = [];
-      let s = content.facility_sections.find(s => s.id === section.id);
-      if (!s) {
-        s = { id: section.id, title: section.title, photos: [] };
-        content.facility_sections.push(s);
-      }
-      const newPhoto = { path, alt: alt.trim() };
-      s.photos.push(newPhoto);
-      await savePhotosJson(content, sha, `Add facility photo: ${section.id}/${filename}`);
-
-      document.getElementById(`fac-grid-${section.id}`)
-              .appendChild(makeFacilityCard(newPhoto, section));
-
-      showToast("追加しました！（サイト反映まで約1分）");
-    } catch (err) {
-      showToast("エラー: " + err.message, true);
-    } finally {
-      setBusy(addBtn, false);
-    }
+    const sec    = facilitySections.find(s => s.id === section.id) || { photos: [] };
+    const photos = (sec.photos || []).map(p => ({ ...p }));
+    container.appendChild(createSectionEl("facility", section, photos, sec));
   });
 }
 
@@ -439,37 +621,16 @@ async function renderGallery() {
   container.innerHTML = "";
 
   GALLERY_SECTIONS.forEach(section => {
-    const sec = photosData.sections.find(s => s.id === section.id)
-      || { id: section.id, title: section.title, title_en: section.title_en, photos: [] };
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "a-section";
-
-    const header = document.createElement("div");
-    header.className = "a-section-header";
-    const titleRow = document.createElement("div");
-    titleRow.className = "a-title-row";
-    const addBtn = document.createElement("button");
-    addBtn.className = "a-btn-add";
-    addBtn.textContent = "＋ 写真を追加";
-    header.appendChild(titleRow);
-    header.appendChild(addBtn);
-    wrapper.appendChild(header);
-
-    showTitleView(titleRow, sec, section);
-
-    const grid = document.createElement("div");
-    grid.className = "a-grid";
-    grid.id = `grid-${section.id}`;
-
-    sec.photos.forEach(photo => grid.appendChild(makeGalleryCard(photo, section)));
-
-    wrapper.appendChild(grid);
-    container.appendChild(wrapper);
-
-    addBtn.addEventListener("click", () => addPhotoFlow(section, addBtn));
+    const sec    = photosData.sections.find(s => s.id === section.id)
+                   || { id: section.id, title: section.title, title_en: section.title_en, photos: [] };
+    const photos = (sec.photos || []).map(p => ({ ...p }));
+    container.appendChild(createSectionEl("gallery", section, photos, sec));
   });
 }
+
+// ================================================================
+// カテゴリー名インライン編集（ギャラリーのみ）
+// ================================================================
 
 function showTitleView(titleRow, sec, section) {
   const title    = sec.title    || section.title;
@@ -519,99 +680,6 @@ function showTitleEdit(titleRow, sec, section) {
     } catch (err) {
       showToast("エラー: " + err.message, true);
       setBusy(btn, false);
-    }
-  });
-}
-
-function makeGalleryCard(photo, section) {
-  const card = document.createElement("div");
-  card.className  = "a-card";
-  card.dataset.path = photo.path;
-  card.innerHTML = `
-    <div class="a-img-wrap">
-      <img src="${photo.path}" alt="${photo.alt || ""}" loading="lazy"
-           onerror="this.parentElement.innerHTML='<div class=a-no-img>画像なし</div>'">
-    </div>
-    <div class="a-info">
-      <div class="a-desc">${photo.alt || "（説明なし）"}</div>
-      <div class="a-actions">
-        <button class="a-btn-replace-sm">差し替え</button>
-        <button class="a-btn-delete">削除</button>
-      </div>
-    </div>
-  `;
-
-  card.querySelector(".a-btn-replace-sm").addEventListener("click", e => {
-    const btn = e.currentTarget;
-    _picker(async file => {
-      setBusy(btn, true);
-      try {
-        const content64 = await compressImage(file);
-        let sha = null;
-        try { sha = (await ghGet(photo.path)).sha; } catch {}
-        await ghPut(photo.path, content64, `Replace: ${photo.path}`, sha);
-        card.querySelector("img").src = photo.path + "?t=" + Date.now();
-        showToast("差し替え完了！（サイト反映まで約1分）");
-      } catch (err) {
-        showToast("エラー: " + err.message, true);
-      } finally {
-        setBusy(btn, false);
-      }
-    });
-  });
-
-  card.querySelector(".a-btn-delete").addEventListener("click", async e => {
-    const btn = e.currentTarget;
-    if (!confirm(`「${photo.alt || photo.path}」を削除しますか？`)) return;
-    setBusy(btn, true);
-    try {
-      const fileData = await ghGet(photo.path);
-      await ghDel(photo.path, fileData.sha, `Delete: ${photo.path}`);
-      const { content, sha } = await loadPhotosJson();
-      const s = content.sections.find(s => s.id === section.id);
-      if (s) s.photos = s.photos.filter(p => p.path !== photo.path);
-      await savePhotosJson(content, sha, `Remove from gallery: ${photo.path}`);
-      card.remove();
-      showToast("削除しました。（サイト反映まで約1分）");
-    } catch (err) {
-      showToast("エラー: " + err.message, true);
-      setBusy(btn, false);
-    }
-  });
-
-  return card;
-}
-
-async function addPhotoFlow(section, addBtn) {
-  _picker(async file => {
-    const alt = prompt("写真の説明を入力してください\n例：リビング、外観、BBQグリルなど", "");
-    if (alt === null) return;
-
-    setBusy(addBtn, true);
-    try {
-      const filename   = `${Date.now()}.jpg`;
-      const path       = `${section.folder}/${filename}`;
-      const content64  = await compressImage(file);
-      await ghPut(path, content64, `Add photo: ${section.id}/${filename}`);
-
-      const { content, sha } = await loadPhotosJson();
-      let s = content.sections.find(s => s.id === section.id);
-      if (!s) {
-        s = { id: section.id, title: section.title, title_en: section.title_en, photos: [] };
-        content.sections.push(s);
-      }
-      const newPhoto = { path, alt: alt.trim() };
-      s.photos.push(newPhoto);
-      await savePhotosJson(content, sha, `Add to gallery: ${section.id}/${filename}`);
-
-      document.getElementById(`grid-${section.id}`)
-              .appendChild(makeGalleryCard(newPhoto, section));
-
-      showToast("追加しました！（サイト反映まで約1分）");
-    } catch (err) {
-      showToast("エラー: " + err.message, true);
-    } finally {
-      setBusy(addBtn, false);
     }
   });
 }

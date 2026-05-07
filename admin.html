@@ -28,8 +28,7 @@
     .login-box input:focus { border-color: #8B7355; }
     .login-box button[type="submit"] {
       width: 100%; margin-top: 22px; padding: 12px; background: #8B7355; color: #fff;
-      border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;
-      transition: background .2s;
+      border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: background .2s;
     }
     .login-box button[type="submit"]:hover { background: #6e5b42; }
     .login-box button[type="submit"]:disabled { background: #bbb; cursor: default; }
@@ -57,55 +56,6 @@
     /* ---- Body ---- */
     .a-body { padding: 28px 20px; max-width: 1100px; margin: 0 auto; }
 
-    /* ---- Section ---- */
-    .a-section { margin-bottom: 44px; }
-    .a-section-header {
-      display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid #e0dbd4; padding-bottom: 10px; margin-bottom: 18px;
-    }
-    .a-section-header h2 { font-size: 1rem; color: #555; letter-spacing: .05em; }
-    .a-section > h2 {
-      font-size: 1rem; color: #555; letter-spacing: .05em;
-      border-bottom: 1px solid #e0dbd4; padding-bottom: 10px; margin-bottom: 18px;
-    }
-
-    /* ---- Grid ---- */
-    .a-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
-
-    /* ---- Card ---- */
-    .a-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.07); display: flex; flex-direction: column; }
-    .a-img-wrap { width: 100%; aspect-ratio: 4/3; background: #eee; overflow: hidden; }
-    .a-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .a-no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: .78rem; }
-    .a-info { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
-    .a-desc { font-size: .85rem; font-weight: 600; }
-    .a-pages { font-size: .72rem; color: #aaa; }
-    .a-actions { display: flex; gap: 6px; margin-top: 8px; }
-
-    /* ---- Buttons ---- */
-    .a-btn-replace, .a-btn-replace-sm {
-      flex: 1; padding: 7px 4px; border: 1px solid #8B7355;
-      background: #fff; color: #8B7355; border-radius: 6px;
-      font-size: .75rem; cursor: pointer; transition: background .15s;
-    }
-    .a-btn-replace:hover, .a-btn-replace-sm:hover { background: #f5f0ea; }
-    .a-btn-replace:disabled, .a-btn-replace-sm:disabled,
-    .a-btn-delete:disabled, .a-btn-add:disabled { opacity: .5; cursor: default; }
-
-    .a-btn-delete {
-      flex: 1; padding: 7px 4px; border: none;
-      background: #fff0f0; color: #c0392b; border-radius: 6px;
-      font-size: .75rem; cursor: pointer; transition: background .15s;
-    }
-    .a-btn-delete:hover { background: #fde8e8; }
-
-    .a-btn-add {
-      padding: 8px 18px; background: #8B7355; color: #fff;
-      border: none; border-radius: 8px; font-size: .85rem; cursor: pointer;
-      transition: background .2s; white-space: nowrap;
-    }
-    .a-btn-add:hover { background: #6e5b42; }
-
     /* ---- Page section dividers ---- */
     .a-page-section { margin-bottom: 60px; }
     .a-page-header {
@@ -115,9 +65,24 @@
       margin-bottom: 24px;
     }
 
-    /* ---- Category title edit ---- */
+    /* ---- Section ---- */
+    .a-section { margin-bottom: 44px; }
+    .a-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+      border-bottom: 1px solid #e0dbd4; padding-bottom: 10px; margin-bottom: 18px;
+    }
+    .a-section-header h2,
+    .a-section > h2 {
+      font-size: 1rem; color: #555; letter-spacing: .05em;
+    }
+    .a-section > h2 {
+      border-bottom: 1px solid #e0dbd4; padding-bottom: 10px; margin-bottom: 18px;
+    }
+
+    /* ---- Title row (category name + pencil) ---- */
     .a-title-row { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; flex-wrap: wrap; }
-    .a-title-en { font-weight: normal; color: #aaa; font-size: .85em; }
+    .a-title-en  { font-weight: normal; color: #aaa; font-size: .85em; }
     .a-btn-edit-title {
       background: none; border: none; cursor: pointer;
       font-size: .95rem; padding: 2px 6px; color: #8B7355; flex-shrink: 0;
@@ -135,10 +100,100 @@
       color: #999; font-size: .8rem; padding: 5px 4px;
     }
 
-    /* ---- States ---- */
-    .a-loading, .a-err-msg {
-      text-align: center; padding: 40px; font-size: .9rem; color: #999;
+    /* ---- Header action buttons ---- */
+    .a-hdr-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+    .a-btn-edit {
+      padding: 7px 18px; background: #fff; color: #8B7355;
+      border: 1px solid #8B7355; border-radius: 8px; font-size: .85rem;
+      cursor: pointer; transition: background .15s; white-space: nowrap;
     }
+    .a-btn-edit:hover { background: #f5f0ea; }
+
+    .a-btn-commit {
+      padding: 7px 18px; background: #27ae60; color: #fff;
+      border: none; border-radius: 8px; font-size: .85rem;
+      cursor: pointer; transition: background .15s; white-space: nowrap;
+    }
+    .a-btn-commit:hover    { background: #229954; }
+    .a-btn-commit:disabled { opacity: .5; cursor: default; }
+
+    .a-btn-cancel-edit {
+      padding: 7px 14px; background: #fff; color: #666;
+      border: 1px solid #ccc; border-radius: 8px; font-size: .85rem;
+      cursor: pointer; transition: background .15s; white-space: nowrap;
+    }
+    .a-btn-cancel-edit:hover { background: #f5f5f5; }
+
+    /* ---- Required photos replace button ---- */
+    .a-btn-replace {
+      flex: 1; padding: 7px 4px; border: 1px solid #8B7355;
+      background: #fff; color: #8B7355; border-radius: 6px;
+      font-size: .75rem; cursor: pointer; transition: background .15s;
+    }
+    .a-btn-replace:hover    { background: #f5f0ea; }
+    .a-btn-replace:disabled { opacity: .5; cursor: default; }
+
+    /* ---- Grid ---- */
+    .a-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+
+    /* ---- Card ---- */
+    .a-card {
+      background: #fff; border-radius: 10px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07); display: flex; flex-direction: column;
+      transition: box-shadow .15s;
+    }
+    .a-edit-mode .a-card.a-editing { cursor: grab; }
+    .a-edit-mode .a-card.a-editing:active { cursor: grabbing; }
+    .a-card.a-dragging  { opacity: .35; }
+    .a-card.a-drag-over { outline: 3px dashed #8B7355; outline-offset: 2px; }
+
+    .a-img-wrap {
+      width: 100%; aspect-ratio: 4/3; background: #eee;
+      overflow: hidden; position: relative;
+    }
+    .a-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .a-no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: .78rem; }
+
+    /* Delete button (×) overlay */
+    .a-card-del {
+      position: absolute; top: 6px; left: 6px;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(192,57,43,.88); color: #fff; border: none;
+      cursor: pointer; font-size: 1.2rem; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2; padding: 0; transition: background .15s;
+    }
+    .a-card-del:hover { background: #c0392b; }
+
+    /* Drag handle overlay */
+    .a-drag-handle {
+      position: absolute; top: 6px; right: 6px;
+      width: 24px; height: 24px; border-radius: 5px;
+      background: rgba(0,0,0,.42); color: #fff;
+      font-size: .9rem; display: flex; align-items: center; justify-content: center;
+      cursor: grab; z-index: 2;
+    }
+
+    .a-info   { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .a-desc   { font-size: .85rem; font-weight: 600; }
+    .a-pages  { font-size: .72rem; color: #aaa; }
+    .a-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+    /* ---- Add card (＋) ---- */
+    .a-add-card {
+      border: 2px dashed #c0b89a; background: #faf8f5;
+      cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      min-height: 120px; box-shadow: none;
+      transition: border-color .15s, background .15s;
+    }
+    .a-add-card:hover { border-color: #8B7355; background: #f5f0ea; }
+    .a-add-icon { font-size: 2.4rem; color: #c0b89a; line-height: 1; pointer-events: none; }
+    .a-add-card:hover .a-add-icon { color: #8B7355; }
+
+    /* ---- States ---- */
+    .a-loading, .a-err-msg { text-align: center; padding: 40px; font-size: .9rem; color: #999; }
     .a-err-msg { color: #c0392b; }
 
     /* ---- Toast ---- */
@@ -148,14 +203,15 @@
       box-shadow: 0 4px 16px rgba(0,0,0,.2); transition: transform .3s ease; z-index: 999;
       pointer-events: none; white-space: nowrap;
     }
-    .a-toast-ok  { background: #2ecc71; }
-    .a-toast-err { background: #e74c3c; }
+    .a-toast-ok   { background: #2ecc71; }
+    .a-toast-err  { background: #e74c3c; }
     .a-toast-show { transform: translateX(-50%) translateY(0); }
 
     @media (max-width: 600px) {
-      .a-body { padding: 20px 14px; }
+      .a-body  { padding: 20px 14px; }
       .login-box { padding: 32px 22px; }
-      .a-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+      .a-grid  { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+      .a-input-title, .a-input-title-en { width: 110px; }
     }
   </style>
 </head>
