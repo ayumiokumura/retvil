@@ -24,9 +24,9 @@ const REQUIRED_PHOTOS = [
 // ギャラリーセクション定義
 // ----------------------------------------------------------------
 const GALLERY_SECTIONS = [
-  { id: "interior", title: "内装",             folder: "assets/images/interior" },
-  { id: "exterior", title: "外装",             folder: "assets/images/exterior" },
-  { id: "amenity",  title: "アメニティ・設備",  folder: "assets/images/amenity"  },
+  { id: "interior", title: "内装",             title_en: "Interior",              folder: "assets/images/interior" },
+  { id: "exterior", title: "外装",             title_en: "Exterior & Garden",     folder: "assets/images/exterior" },
+  { id: "amenity",  title: "アメニティ・設備",  title_en: "Amenities & Equipment", folder: "assets/images/amenity"  },
 ];
 
 // ================================================================
@@ -112,8 +112,9 @@ function compressImage(file, maxPx = 1920, quality = 0.82) {
 
 async function loadPhotosJson() {
   try {
-    const data    = await ghGet("data/photos.json");
-    const content = JSON.parse(atob(data.content.replace(/\n/g, "")));
+    const data  = await ghGet("data/photos.json");
+    const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, "")), c => c.charCodeAt(0));
+    const content = JSON.parse(new TextDecoder().decode(bytes));
     return { content, sha: data.sha };
   } catch (err) {
     if (err.message === "404") return { content: { sections: [] }, sha: null };
@@ -381,7 +382,7 @@ async function addPhotoFlow(section, addBtn) {
       const { content, sha } = await loadPhotosJson();
       let s = content.sections.find(s => s.id === section.id);
       if (!s) {
-        s = { id: section.id, title: section.title, photos: [] };
+        s = { id: section.id, title: section.title, title_en: section.title_en, photos: [] };
         content.sections.push(s);
       }
       const newPhoto = { path, alt: alt.trim() };
