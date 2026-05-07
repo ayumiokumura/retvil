@@ -263,9 +263,17 @@ body {
   cursor: pointer;
 }
 
-.cta-float.minimized .cta-link,
-.cta-float.minimized .cta-minimize {
+.cta-float.minimized .cta-link {
   pointer-events: none;
+  padding: 14px 20px;
+}
+
+.cta-float.minimized .cta-text {
+  display: none;
+}
+
+.cta-float.minimized .cta-minimize {
+  display: none;
 }
 
 .cta-link {
