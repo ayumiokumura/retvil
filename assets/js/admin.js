@@ -602,8 +602,12 @@ function createAddSectionCard(container) {
         <button class="a-btn-add-sec-cancel">キャンセル</button>
       </div>`;
     card.onclick = null;
-    card.querySelector(".a-btn-add-sec-cancel").addEventListener("click", showBtn);
-    card.querySelector(".a-btn-add-sec-ok").addEventListener("click", () => {
+    card.querySelector(".a-btn-add-sec-cancel").addEventListener("click", e => {
+      e.stopPropagation();
+      showBtn();
+    });
+    card.querySelector(".a-btn-add-sec-ok").addEventListener("click", e => {
+      e.stopPropagation();
       const title    = card.querySelector(".a-input-title").value.trim();
       const title_en = card.querySelector(".a-input-title-en").value.trim();
       if (!title) return;
