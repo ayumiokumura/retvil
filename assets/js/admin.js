@@ -17,16 +17,24 @@ const REQUIRED_PHOTOS = [
   { path: "assets/images/logo.png",        desc: "ロゴ（丸アイコン）",    pages: "index.html" },
   { path: "assets/images/owner_yumi.png",  desc: "オーナー YUMI 顔写真",  pages: "owner.html" },
   { path: "assets/images/owner_mikio.png", desc: "オーナー MIKIO 顔写真", pages: "owner.html" },
-  { path: "assets/images/parking.JPG",     desc: "駐車場",                pages: "facilities.html" },
 ];
 
 // ----------------------------------------------------------------
-// ギャラリーセクション定義
+// ギャラリーセクション定義（写真ページ）
 // ----------------------------------------------------------------
 const GALLERY_SECTIONS = [
   { id: "interior", title: "内装",             title_en: "Interior",              folder: "assets/images/interior" },
   { id: "exterior", title: "外装",             title_en: "Exterior & Garden",     folder: "assets/images/exterior" },
   { id: "amenity",  title: "アメニティ・設備",  title_en: "Amenities & Equipment", folder: "assets/images/amenity"  },
+];
+
+// ----------------------------------------------------------------
+// 施設写真セクション定義（基本情報ページ）
+// ----------------------------------------------------------------
+const FACILITY_SECTIONS = [
+  { id: "bath",    title: "バス・トイレ", folder: "assets/images/amenity"  },
+  { id: "ac",      title: "エアコン",     folder: "assets/images/interior" },
+  { id: "parking", title: "駐車場",       folder: "assets/images"          },
 ];
 
 // ================================================================
@@ -117,7 +125,7 @@ async function loadPhotosJson() {
     const content = JSON.parse(new TextDecoder().decode(bytes));
     return { content, sha: data.sha };
   } catch (err) {
-    if (err.message === "404") return { content: { sections: [] }, sha: null };
+    if (err.message === "404") return { content: { sections: [], facility_sections: [] }, sha: null };
     throw err;
   }
 }
@@ -216,6 +224,7 @@ function showAdmin() {
   document.getElementById("admin-login").style.display = "none";
   document.getElementById("admin-main").style.display  = "block";
   renderRequired();
+  renderFacilities();
   renderGallery();
 }
 
@@ -266,7 +275,153 @@ function renderRequired() {
 }
 
 // ================================================================
-// ギャラリーセクション
+// 施設写真セクション（基本情報ページ）
+// ================================================================
+
+async function renderFacilities() {
+  const container = document.getElementById("facilities-container");
+  container.innerHTML = "<div class='a-loading'>施設写真を読み込み中…</div>";
+
+  let photosData;
+  try {
+    photosData = (await loadPhotosJson()).content;
+  } catch (err) {
+    container.innerHTML = `<div class='a-err-msg'>読み込み失敗: ${err.message}</div>`;
+    return;
+  }
+
+  container.innerHTML = "";
+  const facilitySections = photosData.facility_sections || [];
+
+  FACILITY_SECTIONS.forEach(section => {
+    const sec     = facilitySections.find(s => s.id === section.id) || { photos: [] };
+    const wrapper = document.createElement("div");
+    wrapper.className = "a-section";
+    wrapper.innerHTML = `
+      <div class="a-section-header">
+        <h2>${section.title}</h2>
+        <button class="a-btn-add">＋ 写真を追加</button>
+      </div>
+    `;
+    const grid = document.createElement("div");
+    grid.className = "a-grid";
+    grid.id = `fac-grid-${section.id}`;
+
+    sec.photos.forEach(photo => grid.appendChild(makeFacilityCard(photo, section)));
+
+    wrapper.appendChild(grid);
+    container.appendChild(wrapper);
+
+    wrapper.querySelector(".a-btn-add").addEventListener("click", e => {
+      addFacilityPhotoFlow(section, e.currentTarget);
+    });
+  });
+}
+
+function makeFacilityCard(photo, section) {
+  const card = document.createElement("div");
+  card.className   = "a-card";
+  card.dataset.path = photo.path;
+  card.innerHTML = `
+    <div class="a-img-wrap">
+      <img src="${photo.path}" alt="${photo.alt || ""}" loading="lazy"
+           onerror="this.parentElement.innerHTML='<div class=a-no-img>画像なし</div>'">
+    </div>
+    <div class="a-info">
+      <div class="a-desc">${photo.alt || "（説明なし）"}</div>
+      <div class="a-actions">
+        <button class="a-btn-replace-sm">差し替え</button>
+        <button class="a-btn-delete">削除</button>
+      </div>
+    </div>
+  `;
+
+  card.querySelector(".a-btn-replace-sm").addEventListener("click", e => {
+    const btn = e.currentTarget;
+    _picker(async file => {
+      setBusy(btn, true);
+      try {
+        const filename  = `${Date.now()}.jpg`;
+        const newPath   = `${section.folder}/${filename}`;
+        const content64 = await compressImage(file);
+        await ghPut(newPath, content64, `Replace facility photo: ${section.id}/${filename}`);
+
+        const { content, sha } = await loadPhotosJson();
+        if (!content.facility_sections) content.facility_sections = [];
+        const s = content.facility_sections.find(s => s.id === section.id);
+        if (s) {
+          const p = s.photos.find(p => p.path === photo.path);
+          if (p) { p.path = newPath; photo.path = newPath; }
+        }
+        await savePhotosJson(content, sha, `Replace facility photo: ${section.id}`);
+        card.querySelector("img").src = newPath + "?t=" + Date.now();
+        showToast("差し替え完了！（サイト反映まで約1分）");
+      } catch (err) {
+        showToast("エラー: " + err.message, true);
+      } finally {
+        setBusy(btn, false);
+      }
+    });
+  });
+
+  card.querySelector(".a-btn-delete").addEventListener("click", async e => {
+    const btn = e.currentTarget;
+    if (!confirm(`「${photo.alt || photo.path}」を削除しますか？\n（ファイルは保持されます）`)) return;
+    setBusy(btn, true);
+    try {
+      const { content, sha } = await loadPhotosJson();
+      if (!content.facility_sections) content.facility_sections = [];
+      const s = content.facility_sections.find(s => s.id === section.id);
+      if (s) s.photos = s.photos.filter(p => p.path !== photo.path);
+      await savePhotosJson(content, sha, `Remove from facility: ${photo.path}`);
+      card.remove();
+      showToast("削除しました。（サイト反映まで約1分）");
+    } catch (err) {
+      showToast("エラー: " + err.message, true);
+      setBusy(btn, false);
+    }
+  });
+
+  return card;
+}
+
+async function addFacilityPhotoFlow(section, addBtn) {
+  _picker(async file => {
+    const alt = prompt("写真の説明を入力してください\n例：浴室、洗面台、駐車場など", "");
+    if (alt === null) return;
+
+    setBusy(addBtn, true);
+    try {
+      const filename  = `${Date.now()}.jpg`;
+      const path      = `${section.folder}/${filename}`;
+      const content64 = await compressImage(file);
+      await ghPut(path, content64, `Add facility photo: ${section.id}/${filename}`);
+
+      const { content, sha } = await loadPhotosJson();
+      if (!content.facility_sections) content.facility_sections = [];
+      let s = content.facility_sections.find(s => s.id === section.id);
+      if (!s) {
+        s = { id: section.id, title: section.title, photos: [] };
+        content.facility_sections.push(s);
+      }
+      const newPhoto = { path, alt: alt.trim() };
+      s.photos.push(newPhoto);
+      await savePhotosJson(content, sha, `Add facility photo: ${section.id}/${filename}`);
+
+      document.getElementById(`fac-grid-${section.id}`)
+              .appendChild(makeFacilityCard(newPhoto, section));
+
+      showToast("追加しました！（サイト反映まで約1分）");
+    } catch (err) {
+      showToast("エラー: " + err.message, true);
+    } finally {
+      setBusy(addBtn, false);
+    }
+  });
+}
+
+// ================================================================
+// ギャラリーセクション（写真ページ）
 // ================================================================
 
 async function renderGallery() {
@@ -284,15 +439,25 @@ async function renderGallery() {
   container.innerHTML = "";
 
   GALLERY_SECTIONS.forEach(section => {
-    const sec     = photosData.sections.find(s => s.id === section.id) || { photos: [] };
+    const sec = photosData.sections.find(s => s.id === section.id)
+      || { id: section.id, title: section.title, title_en: section.title_en, photos: [] };
+
     const wrapper = document.createElement("div");
     wrapper.className = "a-section";
-    wrapper.innerHTML = `
-      <div class="a-section-header">
-        <h2>${section.title}</h2>
-        <button class="a-btn-add">＋ 写真を追加</button>
-      </div>
-    `;
+
+    const header = document.createElement("div");
+    header.className = "a-section-header";
+    const titleRow = document.createElement("div");
+    titleRow.className = "a-title-row";
+    const addBtn = document.createElement("button");
+    addBtn.className = "a-btn-add";
+    addBtn.textContent = "＋ 写真を追加";
+    header.appendChild(titleRow);
+    header.appendChild(addBtn);
+    wrapper.appendChild(header);
+
+    showTitleView(titleRow, sec, section);
+
     const grid = document.createElement("div");
     grid.className = "a-grid";
     grid.id = `grid-${section.id}`;
@@ -302,9 +467,59 @@ async function renderGallery() {
     wrapper.appendChild(grid);
     container.appendChild(wrapper);
 
-    wrapper.querySelector(".a-btn-add").addEventListener("click", e => {
-      addPhotoFlow(section, e.currentTarget);
-    });
+    addBtn.addEventListener("click", () => addPhotoFlow(section, addBtn));
+  });
+}
+
+function showTitleView(titleRow, sec, section) {
+  const title    = sec.title    || section.title;
+  const title_en = sec.title_en || section.title_en;
+  titleRow.innerHTML = `
+    <h2>${title} <span class="a-title-en">(${title_en})</span></h2>
+    <button class="a-btn-edit-title" title="カテゴリー名を編集">✏️</button>
+  `;
+  titleRow.querySelector(".a-btn-edit-title").addEventListener("click", () => {
+    showTitleEdit(titleRow, sec, section);
+  });
+}
+
+function showTitleEdit(titleRow, sec, section) {
+  const title    = sec.title    || section.title;
+  const title_en = sec.title_en || section.title_en;
+  titleRow.innerHTML = `
+    <input class="a-input-title"    value="${title}"    placeholder="日本語タイトル">
+    <input class="a-input-title-en" value="${title_en}" placeholder="English title">
+    <button class="a-btn-save-title">保存</button>
+    <button class="a-btn-cancel-title">キャンセル</button>
+  `;
+  titleRow.querySelector(".a-btn-cancel-title").addEventListener("click", () => {
+    showTitleView(titleRow, sec, section);
+  });
+  titleRow.querySelector(".a-btn-save-title").addEventListener("click", async () => {
+    const btn        = titleRow.querySelector(".a-btn-save-title");
+    const newTitle   = titleRow.querySelector(".a-input-title").value.trim();
+    const newTitleEn = titleRow.querySelector(".a-input-title-en").value.trim();
+    if (!newTitle) return;
+    setBusy(btn, true);
+    try {
+      const { content, sha } = await loadPhotosJson();
+      let s = content.sections.find(s => s.id === section.id);
+      if (!s) {
+        s = { id: section.id, title: newTitle, title_en: newTitleEn, photos: [] };
+        content.sections.push(s);
+      } else {
+        s.title    = newTitle;
+        s.title_en = newTitleEn;
+      }
+      await savePhotosJson(content, sha, `Update section title: ${section.id}`);
+      sec.title    = newTitle;
+      sec.title_en = newTitleEn;
+      showTitleView(titleRow, sec, section);
+      showToast("カテゴリー名を更新しました。");
+    } catch (err) {
+      showToast("エラー: " + err.message, true);
+      setBusy(btn, false);
+    }
   });
 }
 
