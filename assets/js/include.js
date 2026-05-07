@@ -17,6 +17,11 @@ window.applyLang = function (lang) {
 // ── partials ─────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
 
+  // Load lightbox
+  const lbScript = document.createElement('script');
+  lbScript.src = 'assets/js/lightbox.js';
+  document.body.appendChild(lbScript);
+
   // Apply lang to page-level content first
   window.applyLang(window.rvLang);
 
