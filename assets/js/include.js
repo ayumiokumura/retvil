@@ -1,15 +1,38 @@
+// ── i18n ────────────────────────────────────────────────
+window.rvLang = localStorage.getItem('rv-lang') || 'ja';
+
+window.applyLang = function (lang) {
+  window.rvLang = lang;
+  localStorage.setItem('rv-lang', lang);
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-ja], [data-en]').forEach(el => {
+    const val = el.getAttribute('data-' + lang);
+    if (val !== null) el.textContent = val;
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+};
+
+// ── partials ─────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
+
+  // Apply lang to page-level content first
+  window.applyLang(window.rvLang);
+
   const load = (id, path, callback) => {
     fetch(path)
       .then(res => res.text())
       .then(data => {
         document.getElementById(id).innerHTML = data;
+        window.applyLang(window.rvLang);
         if (callback) callback();
       });
   };
 
   load("header-include", "partials/header.html", () => {
     initHamburger();
+    initLangButtons();
   });
 
   function initHamburger() {
@@ -50,12 +73,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function initLangButtons() {
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => window.applyLang(btn.dataset.lang));
+    });
+    // Reflect current lang on buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === window.rvLang);
+    });
+  }
+
   load("footer-include", "partials/footer.html");
 
   fetch("partials/cta.html")
     .then(res => res.text())
     .then(data => {
       document.body.insertAdjacentHTML("beforeend", data);
+      window.applyLang(window.rvLang);
 
       const ctaFloat = document.getElementById("cta-float");
       const minBtn   = document.getElementById("cta-minimize");

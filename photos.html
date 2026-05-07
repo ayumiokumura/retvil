@@ -14,8 +14,8 @@
 <div id="header-include"></div>
 
 <main class="content page-top">
-  <h2>写真</h2>
-  <div id="photos-loading" style="text-align:center;padding:60px 0;color:#999;font-size:.95rem;">読み込み中…</div>
+  <h2 data-ja="写真" data-en="Photos">写真</h2>
+  <div id="photos-loading" style="text-align:center;padding:60px 0;color:#999;font-size:.95rem;" data-ja="読み込み中…" data-en="Loading...">読み込み中…</div>
   <div id="photos-sections"></div>
 </main>
 
@@ -35,10 +35,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         `<div class="carousel-item${i === 0 ? " active" : ""}"><img src="${p.path}" alt="${p.alt || ""}"></div>`
       ).join("");
 
+      const lang = window.rvLang || 'ja';
+      const title = (lang === 'en' && section.title_en) ? section.title_en : section.title;
+
       const sec = document.createElement("section");
       sec.className = "photo-section";
+      sec.dataset.titleJa = section.title;
+      sec.dataset.titleEn = section.title_en || section.title;
       sec.innerHTML = `
-        <div class="photo-title">${section.title}</div>
+        <div class="photo-title" data-ja="${section.title}" data-en="${section.title_en || section.title}">${title}</div>
         <div class="photo-line"></div>
         <div class="carousel">
           ${items}
@@ -51,8 +56,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     loading.style.display = "none";
     initCarousels();
+    // Apply current language to dynamically rendered titles
+    window.applyLang(window.rvLang || 'ja');
   } catch {
-    loading.textContent = "写真の読み込みに失敗しました。";
+    const lang = window.rvLang || 'ja';
+    loading.textContent = lang === 'en' ? "Failed to load photos." : "写真の読み込みに失敗しました。";
   }
 });
 </script>
