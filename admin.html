@@ -33,15 +33,9 @@
     .login-box button[type="submit"]:hover { background: #6e5b42; }
     .login-box button[type="submit"]:disabled { background: #bbb; cursor: default; }
     #login-error { color: #c0392b; font-size: .83rem; margin-top: 10px; min-height: 1.2em; }
-    .token-hint {
-      margin-top: 16px; padding: 14px 16px; background: #f9f6f2;
-      border-radius: 8px; font-size: .78rem; line-height: 1.7; color: #666;
-    }
-    .token-hint strong { color: #8B7355; }
-    .token-hint a { color: #8B7355; }
-
     /* ---- Admin Header ---- */
     #admin-main { display: none; }
+    #login-section { display: block; }
     .a-header {
       background: #2c2c2c; color: #fff; padding: 14px 20px;
       display: flex; align-items: center; justify-content: space-between;
@@ -251,30 +245,35 @@
 <!-- ========== LOGIN ========== -->
 <div id="admin-login">
   <div class="login-box">
-    <h1>Ret.Village 管理者</h1>
-    <p>写真の追加・削除・差し替えができます</p>
-    <form id="login-form">
-      <label for="admin-pw">パスワード</label>
-      <input type="password" id="admin-pw" autocomplete="current-password" placeholder="管理者パスワード">
 
-      <label for="admin-token">GitHub トークン</label>
-      <input type="text" id="admin-token" autocomplete="off" placeholder="github_pat_xxxx…">
+    <!-- 初回設定画面（Cloudinary認証情報） -->
+    <div id="setup-section">
+      <h1>初期設定</h1>
+      <p>Cloudinary の認証情報を入力してください。<br>この操作は初回のみ必要です。</p>
+      <form id="setup-form">
+        <label for="setup-key">API Key</label>
+        <input type="text" id="setup-key" autocomplete="off" placeholder="874958…">
+        <label for="setup-secret">API Secret</label>
+        <input type="password" id="setup-secret" autocomplete="off" placeholder="D6Buli8C…">
+        <button type="submit">保存してログインへ</button>
+      </form>
+    </div>
 
-      <div class="token-hint">
-        <strong>GitHub トークンの取得方法</strong><br>
-        ブラウザで下記 URL を直接開く：<br>
-        <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">
-          https://github.com/settings/tokens
-        </a><br><br>
-        「Generate new token (classic)」をクリック<br>
-        → Scope の <strong>repo</strong> にチェック<br>
-        → 「Generate token」→ 表示されたトークンをコピー<br><br>
-        ※ トークンはブラウザに保存されるため、次回以降は入力不要
+    <!-- ログイン画面 -->
+    <div id="login-section">
+      <h1>Ret.Village 管理者</h1>
+      <p>写真の追加・削除・差し替えができます</p>
+      <div id="setup-done-notice" style="display:none; margin-bottom:14px; padding:10px 14px; background:#f0faf4; border-radius:8px; font-size:.83rem; color:#27ae60;">
+        設定が完了しました。パスワードを入力してログインしてください。
       </div>
+      <form id="login-form">
+        <label for="admin-pw">パスワード</label>
+        <input type="password" id="admin-pw" autocomplete="current-password" placeholder="管理者パスワード">
+        <button type="submit">ログイン</button>
+      </form>
+      <div id="login-error"></div>
+    </div>
 
-      <button type="submit">ログイン</button>
-    </form>
-    <div id="login-error"></div>
   </div>
 </div>
 

@@ -1,49 +1,51 @@
 // ============================================================
-//  Ret.Village 管理者ページ  —  admin.js
+//  Ret.Village 管理者ページ  —  admin.js  (Cloudinary版)
 // ============================================================
-const ADMIN_PASS  = "nasu-admin";
-const SESSION_KEY = "rv_admin";
-const TOKEN_KEY   = "rv_token";
-const GH_OWNER    = "ayumiokumura";
-const GH_REPO     = "retvil";
-const GH_BRANCH   = "main";
+
+const ADMIN_PASS       = "nasu-admin";
+const SESSION_KEY      = "rv_admin";
+const CLOUD_NAME       = "dlbkklzyo";
+const UPLOAD_PRESET    = "retvil_upload";
+const API_KEY_STORE    = "rv_cld_key";
+const API_SECRET_STORE = "rv_cld_secret";
+// Cloudinary上のphotos.json（public_idに拡張子込み）
+const PHOTOS_JSON_PID  = "retvil/data/photos.json";
+const PHOTOS_JSON_URL  = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/${PHOTOS_JSON_PID}`;
 
 const REQUIRED_PHOTOS = [
-  { path: "assets/images/nasu.jpg",        desc: "トップページ 背景",     pages: "index.html" },
-  { path: "assets/images/logo.png",        desc: "ロゴ（丸アイコン）",    pages: "index.html" },
-  { path: "assets/images/owner_yumi.png",  desc: "オーナー YUMI 顔写真",  pages: "owner.html" },
-  { path: "assets/images/owner_mikio.png", desc: "オーナー MIKIO 顔写真", pages: "owner.html" },
+  { publicId: "retvil/required/nasu",  desc: "トップページ 背景",     pages: "index.html" },
+  { publicId: "retvil/required/logo",  desc: "ロゴ（丸アイコン）",    pages: "index.html" },
+  { publicId: "retvil/required/yumi",  desc: "オーナー YUMI 顔写真",  pages: "owner.html" },
+  { publicId: "retvil/required/mikio", desc: "オーナー MIKIO 顔写真", pages: "owner.html" },
 ];
 
 const GALLERY_SECTIONS = [
-  { id: "interior", title: "内装",            title_en: "Interior",              folder: "assets/images/interior" },
-  { id: "exterior", title: "外装",            title_en: "Exterior & Garden",     folder: "assets/images/exterior" },
-  { id: "amenity",  title: "アメニティ・設備", title_en: "Amenities & Equipment", folder: "assets/images/amenity"  },
+  { id: "interior", title: "内装",            title_en: "Interior",              folder: "retvil/gallery/interior" },
+  { id: "exterior", title: "外装",            title_en: "Exterior & Garden",     folder: "retvil/gallery/exterior" },
+  { id: "amenity",  title: "アメニティ・設備", title_en: "Amenities & Equipment", folder: "retvil/gallery/amenity"  },
 ];
 
 const FACILITY_SECTIONS = [
-  { id: "bath",    title: "バス・トイレ", folder: "assets/images/amenity"  },
-  { id: "ac",      title: "エアコン",     folder: "assets/images/interior" },
-  { id: "parking", title: "駐車場",       folder: "assets/images"          },
+  { id: "bath",    title: "バス・トイレ", folder: "retvil/facilities/bath"    },
+  { id: "ac",      title: "エアコン",     folder: "retvil/facilities/ac"      },
+  { id: "parking", title: "駐車場",       folder: "retvil/facilities/parking" },
 ];
 
 // ================================================================
 // ページ単位の編集状態
 // ================================================================
 
-// 写真ページ（gallery）
 const _gallery = {
   editing: false,
-  secDefs: [],           // [{id,title,title_en,folder}] — 現在の順序
-  origSecDefs: [],       // キャンセル用バックアップ
-  secPhotos: {},         // [id]: {photos[], orig[], toDelete Set}
-  delSecIds: new Set()   // コミット時にJSONから削除するセクションID
+  secDefs: [],
+  origSecDefs: [],
+  secPhotos: {},
+  delSecIds: new Set()
 };
 
-// 基本情報ページ（facility）
 const _facility = {
   editing: false,
-  secPhotos: {}          // [id]: {photos[], orig[], toDelete Set}
+  secPhotos: {}
 };
 
 function galSP(id) {
@@ -58,7 +60,7 @@ function facSP(id) {
 }
 function getGalleryFolder(id) {
   const d = GALLERY_SECTIONS.find(s => s.id === id);
-  return d ? d.folder : `assets/images/${id}`;
+  return d ? d.folder : `retvil/gallery/${id}`;
 }
 function anyEditing() { return _gallery.editing || _facility.editing; }
 
@@ -67,47 +69,124 @@ window.addEventListener("beforeunload", e => {
 });
 
 // ================================================================
-// GitHub API
+// Cloudinary 認証情報
 // ================================================================
 
-function ghHeaders() {
-  return {
-    Authorization: `token ${localStorage.getItem(TOKEN_KEY) || ""}`,
-    Accept: "application/vnd.github.v3+json",
-    "Content-Type": "application/json",
-  };
-}
-function encodePath(p) { return p.split("/").map(encodeURIComponent).join("/"); }
+function getApiKey()   { return localStorage.getItem(API_KEY_STORE)    || ""; }
+function getSecret()   { return localStorage.getItem(API_SECRET_STORE) || ""; }
+function hasCldCreds() { return !!(getApiKey() && getSecret()); }
 
-async function ghGet(path) {
-  const res = await fetch(
-    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodePath(path)}?ref=${GH_BRANCH}`,
-    { headers: ghHeaders() }
-  );
-  if (!res.ok) throw new Error(`${res.status}`);
-  return res.json();
-}
-async function ghPut(path, content64, message, sha = null) {
-  const body = { message, content: content64, branch: GH_BRANCH };
-  if (sha) body.sha = sha;
-  const res = await fetch(
-    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodePath(path)}`,
-    { method: "PUT", headers: ghHeaders(), body: JSON.stringify(body) }
-  );
-  if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.message || res.status); }
-  return res.json();
-}
-async function ghDel(path, sha, message) {
-  const res = await fetch(
-    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodePath(path)}`,
-    { method: "DELETE", headers: ghHeaders(), body: JSON.stringify({ message, sha, branch: GH_BRANCH }) }
-  );
-  if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.message || res.status); }
-  return res.json();
+function cldImgUrl(publicId) {
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto/${publicId}`;
 }
 
 // ================================================================
-// 画像圧縮
+// Cloudinary 署名（SHA-256）
+// ================================================================
+
+const _SIGN_SKIP = new Set(["file", "api_key", "resource_type", "cloud_name", "signature"]);
+
+async function cldSign(params) {
+  const str = Object.keys(params)
+    .filter(k => !_SIGN_SKIP.has(k))
+    .sort()
+    .map(k => `${k}=${params[k]}`)
+    .join("&") + getSecret();
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+// ================================================================
+// Cloudinary API
+// ================================================================
+
+// 新規アップロード（unsigned preset）: ギャラリー / 施設の写真追加
+async function cldUploadNew(file, folder) {
+  const blob = await compressImage(file);
+  const fd   = new FormData();
+  fd.append("file",          blob, "photo.jpg");
+  fd.append("upload_preset", UPLOAD_PRESET);
+  fd.append("folder",        folder);
+  const res  = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    { method: "POST", body: fd }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || "Upload failed");
+  return { path: data.secure_url, publicId: data.public_id };
+}
+
+// 上書きアップロード（signed）: 必須写真差し替え
+async function cldUploadReplace(file, publicId) {
+  const blob      = await compressImage(file);
+  const timestamp = Math.floor(Date.now() / 1000);
+  const sigP      = { invalidate: "true", overwrite: "true", public_id: publicId, timestamp };
+  const sig       = await cldSign(sigP);
+  const fd        = new FormData();
+  fd.append("file", blob, "photo.jpg");
+  Object.entries(sigP).forEach(([k, v]) => fd.append(k, String(v)));
+  fd.append("api_key",   getApiKey());
+  fd.append("signature", sig);
+  const res  = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    { method: "POST", body: fd }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || "Upload failed");
+  return data;
+}
+
+// 削除（signed）: ギャラリー写真
+async function cldDestroy(publicId) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const sigP      = { public_id: publicId, timestamp };
+  const sig       = await cldSign(sigP);
+  const fd        = new FormData();
+  fd.append("public_id",  publicId);
+  fd.append("timestamp",  String(timestamp));
+  fd.append("api_key",    getApiKey());
+  fd.append("signature",  sig);
+  return fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/destroy`,
+    { method: "POST", body: fd }
+  ).then(r => r.json());
+}
+
+// ================================================================
+// photos.json 読み書き（Cloudinary raw ファイル）
+// ================================================================
+
+async function loadPhotosJson() {
+  try {
+    const res = await fetch(PHOTOS_JSON_URL, { cache: "no-cache" });
+    if (!res.ok) return { sections: [], facility_sections: [] };
+    return res.json();
+  } catch {
+    return { sections: [], facility_sections: [] };
+  }
+}
+
+async function savePhotosJson(content) {
+  const blob      = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" });
+  const timestamp = Math.floor(Date.now() / 1000);
+  const sigP      = { invalidate: "true", overwrite: "true", public_id: PHOTOS_JSON_PID, timestamp };
+  const sig       = await cldSign(sigP);
+  const fd        = new FormData();
+  fd.append("file",      blob, "photos.json");
+  Object.entries(sigP).forEach(([k, v]) => fd.append(k, String(v)));
+  fd.append("api_key",   getApiKey());
+  fd.append("signature", sig);
+  const res  = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/raw/upload`,
+    { method: "POST", body: fd }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || "JSON save failed");
+  return data;
+}
+
+// ================================================================
+// 画像圧縮 → Blob（JPEG）
 // ================================================================
 
 function compressImage(file, maxPx = 1920, quality = 0.82) {
@@ -116,16 +195,12 @@ function compressImage(file, maxPx = 1920, quality = 0.82) {
     const img = new Image();
     img.onload = () => {
       URL.revokeObjectURL(url);
-      const ratio = Math.min(maxPx / img.width, maxPx / img.height, 1);
+      const ratio  = Math.min(maxPx / img.width, maxPx / img.height, 1);
       const canvas = document.createElement("canvas");
       canvas.width  = Math.round(img.width  * ratio);
       canvas.height = Math.round(img.height * ratio);
       canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(blob => {
-        const r = new FileReader();
-        r.onload = ev => resolve(ev.target.result.split(",")[1]);
-        r.readAsDataURL(blob);
-      }, "image/jpeg", quality);
+      canvas.toBlob(resolve, "image/jpeg", quality);
     };
     img.onerror = reject;
     img.src = url;
@@ -133,38 +208,19 @@ function compressImage(file, maxPx = 1920, quality = 0.82) {
 }
 
 // ================================================================
-// photos.json 読み書き
-// ================================================================
-
-async function loadPhotosJson() {
-  try {
-    const data  = await ghGet("data/photos.json");
-    const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, "")), c => c.charCodeAt(0));
-    return { content: JSON.parse(new TextDecoder().decode(bytes)), sha: data.sha };
-  } catch (err) {
-    if (err.message === "404") return { content: { sections: [], facility_sections: [] }, sha: null };
-    throw err;
-  }
-}
-async function savePhotosJson(content, sha, message) {
-  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
-  return ghPut("data/photos.json", b64, message, sha);
-}
-
-// ================================================================
 // UI ヘルパー
 // ================================================================
 
 function showToast(msg, isError = false) {
-  const t = document.getElementById("toast");
+  const t    = document.getElementById("toast");
   t.textContent = msg;
   t.className   = "a-toast " + (isError ? "a-toast-err" : "a-toast-ok") + " a-toast-show";
   clearTimeout(t._t);
   t._t = setTimeout(() => t.classList.remove("a-toast-show"), 3500);
 }
 function setBusy(btn, busy) {
-  if (busy)  { btn.dataset.orig = btn.textContent; btn.textContent = "処理中…"; btn.disabled = true; }
-  else       { btn.textContent = btn.dataset.orig || btn.textContent; btn.disabled = false; }
+  if (busy) { btn.dataset.orig = btn.textContent; btn.textContent = "処理中…"; btn.disabled = true; }
+  else      { btn.textContent = btn.dataset.orig || btn.textContent; btn.disabled = false; }
 }
 
 // ================================================================
@@ -172,32 +228,43 @@ function setBusy(btn, busy) {
 // ================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (sessionStorage.getItem(SESSION_KEY) === "1" && localStorage.getItem(TOKEN_KEY)) showAdmin();
+  if (sessionStorage.getItem(SESSION_KEY) === "1" && hasCldCreds()) {
+    showAdmin();
+    return;
+  }
 
-  document.getElementById("login-form").addEventListener("submit", async e => {
+  const setupSec = document.getElementById("setup-section");
+  const loginSec = document.getElementById("login-section");
+
+  if (!hasCldCreds()) {
+    setupSec.style.display = "block";
+    loginSec.style.display = "none";
+  }
+
+  document.getElementById("setup-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const key    = document.getElementById("setup-key").value.trim();
+    const secret = document.getElementById("setup-secret").value.trim();
+    if (!key || !secret) return;
+    localStorage.setItem(API_KEY_STORE,    key);
+    localStorage.setItem(API_SECRET_STORE, secret);
+    setupSec.style.display = "none";
+    loginSec.style.display = "block";
+    document.getElementById("setup-done-notice").style.display = "block";
+  });
+
+  document.getElementById("login-form").addEventListener("submit", e => {
     e.preventDefault();
     const pw  = document.getElementById("admin-pw").value;
-    const tok = document.getElementById("admin-token").value.trim();
     const err = document.getElementById("login-error");
     if (pw !== ADMIN_PASS) { err.textContent = "パスワードが正しくありません"; return; }
-    if (!tok)              { err.textContent = "GitHub トークンを入力してください"; return; }
-    const btn = e.submitter;
-    setBusy(btn, true); err.textContent = "";
-    try {
-      const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`,
-        { headers: { Authorization: `token ${tok}` } });
-      if (!r.ok) throw new Error();
-      localStorage.setItem(TOKEN_KEY, tok);
-      sessionStorage.setItem(SESSION_KEY, "1");
-      showAdmin();
-    } catch {
-      err.textContent = "GitHub トークンが無効です。Scopeを確認してください。";
-      setBusy(btn, false);
-    }
+    sessionStorage.setItem(SESSION_KEY, "1");
+    showAdmin();
   });
 
   document.getElementById("logout-btn").addEventListener("click", () => {
-    sessionStorage.removeItem(SESSION_KEY); location.reload();
+    sessionStorage.removeItem(SESSION_KEY);
+    location.reload();
   });
 });
 
@@ -216,32 +283,33 @@ function showAdmin() {
 function renderRequired() {
   const grid = document.getElementById("required-grid");
   grid.innerHTML = "";
-  REQUIRED_PHOTOS.forEach(photo => {
-    const card = document.createElement("div");
+  REQUIRED_PHOTOS.forEach(req => {
+    const imgUrl = cldImgUrl(req.publicId);
+    const card   = document.createElement("div");
     card.className = "a-card";
     card.innerHTML = `
       <div class="a-img-wrap">
-        <img src="${photo.path}?t=${Date.now()}" alt="${photo.desc}" loading="lazy"
-             onerror="this.parentElement.innerHTML='<div class=a-no-img>画像なし</div>'">
+        <img src="${imgUrl}" alt="${req.desc}" loading="lazy"
+             onerror="this.parentElement.innerHTML='<div class=a-no-img>未アップロード</div>'">
       </div>
       <div class="a-info">
-        <div class="a-desc">${photo.desc}</div>
-        <div class="a-pages">📄 ${photo.pages}</div>
+        <div class="a-desc">${req.desc}</div>
+        <div class="a-pages">📄 ${req.pages}</div>
         <div class="a-actions"><button class="a-btn-replace">差し替え</button></div>
       </div>`;
     const btn = card.querySelector(".a-btn-replace");
     btn.addEventListener("click", () => {
-      const inp = document.createElement("input");
-      inp.type = "file"; inp.accept = "image/*";
+      const inp  = document.createElement("input");
+      inp.type   = "file";
+      inp.accept = "image/*";
       inp.addEventListener("change", async () => {
         const file = inp.files[0]; if (!file) return;
         setBusy(btn, true);
         try {
-          const b64 = await compressImage(file);
-          let sha = null; try { sha = (await ghGet(photo.path)).sha; } catch {}
-          await ghPut(photo.path, b64, `Replace: ${photo.path}`, sha);
-          card.querySelector("img").src = photo.path + "?t=" + Date.now();
-          showToast("差し替え完了！（サイト反映まで約1分）");
+          await cldUploadReplace(file, req.publicId);
+          const el = card.querySelector("img");
+          if (el) el.src = imgUrl + "?_v=" + Date.now();
+          showToast("差し替え完了！（CDN反映まで少々お待ちください）");
         } catch (err) { showToast("エラー: " + err.message, true); }
         finally { setBusy(btn, false); }
       });
@@ -256,22 +324,25 @@ function renderRequired() {
 // ================================================================
 
 function setPageBarIdle(barActsId, onEdit) {
-  const el = document.getElementById(barActsId);
+  const el  = document.getElementById(barActsId);
   el.innerHTML = "";
   const btn = document.createElement("button");
-  btn.className = "a-btn-edit"; btn.textContent = "編集";
+  btn.className   = "a-btn-edit";
+  btn.textContent = "編集";
   btn.addEventListener("click", onEdit);
   el.appendChild(btn);
 }
 
 function setPageBarEditing(barActsId, onCommit, onCancel) {
-  const el = document.getElementById(barActsId);
-  el.innerHTML = "";
+  const el        = document.getElementById(barActsId);
+  el.innerHTML    = "";
   const commitBtn = document.createElement("button");
-  commitBtn.className = "a-btn-commit"; commitBtn.textContent = "決定";
+  commitBtn.className   = "a-btn-commit";
+  commitBtn.textContent = "決定";
   commitBtn.addEventListener("click", onCommit);
   const cancelBtn = document.createElement("button");
-  cancelBtn.className = "a-btn-cancel-edit"; cancelBtn.textContent = "キャンセル";
+  cancelBtn.className   = "a-btn-cancel-edit";
+  cancelBtn.textContent = "キャンセル";
   cancelBtn.addEventListener("click", onCancel);
   el.appendChild(commitBtn);
   el.appendChild(cancelBtn);
@@ -285,7 +356,7 @@ async function renderFacilities() {
   const container = document.getElementById("facilities-container");
   container.innerHTML = "<div class='a-loading'>施設写真を読み込み中…</div>";
   let photosData;
-  try { photosData = (await loadPhotosJson()).content; }
+  try { photosData = await loadPhotosJson(); }
   catch (err) { container.innerHTML = `<div class='a-err-msg'>読み込み失敗: ${err.message}</div>`; return; }
   container.innerHTML = "";
 
@@ -330,50 +401,51 @@ async function commitFacilityChanges() {
   const commitBtn = document.querySelector("#facility-bar-acts .a-btn-commit");
   if (commitBtn) setBusy(commitBtn, true);
   try {
-    let uploaded = 0;
-    const totalNew = FACILITY_SECTIONS.reduce((n, d) => n + facSP(d.id).photos.filter(p => p._isNew).length, 0);
+    let uploaded  = 0;
+    const totalNew    = FACILITY_SECTIONS.reduce((n, d) => n + facSP(d.id).photos.filter(p => p._isNew).length, 0);
     const savedPerSec = {};
 
     for (const secDef of FACILITY_SECTIONS) {
-      const sp = facSP(secDef.id);
+      const sp    = facSP(secDef.id);
       const saved = [];
       for (const photo of sp.photos) {
         if (photo._isNew) {
           uploaded++;
           if (totalNew > 1 && commitBtn) commitBtn.textContent = `アップロード中 ${uploaded}/${totalNew}…`;
-          const fname = `${Date.now()}_${Math.random().toString(36).slice(2,6)}.jpg`;
-          const path  = `${secDef.folder}/${fname}`;
-          await ghPut(path, await compressImage(photo._file), `Add: ${secDef.id}/${fname}`);
+          const result = await cldUploadNew(photo._file, secDef.folder);
           URL.revokeObjectURL(photo._previewUrl);
-          saved.push({ path, alt: photo.alt || "" });
+          saved.push({ path: result.path, publicId: result.publicId, alt: photo.alt || "" });
         } else {
-          saved.push({ path: photo.path, alt: photo.alt || "" });
+          saved.push({ path: photo.path, publicId: photo.publicId || null, alt: photo.alt || "" });
         }
       }
       savedPerSec[secDef.id] = saved;
     }
 
-    const { content, sha } = await loadPhotosJson();
+    const content = await loadPhotosJson();
     if (!content.facility_sections) content.facility_sections = [];
     for (const secDef of FACILITY_SECTIONS) {
       let s = content.facility_sections.find(s => s.id === secDef.id);
-      if (!s) { s = { id: secDef.id, title: secDef.title, photos: [] }; content.facility_sections.push(s); }
+      if (!s) {
+        s = { id: secDef.id, title: secDef.title, photos: [] };
+        content.facility_sections.push(s);
+      }
       s.photos = savedPerSec[secDef.id];
     }
-    await savePhotosJson(content, sha, "Update facility sections");
+    await savePhotosJson(content);
 
     FACILITY_SECTIONS.forEach(secDef => {
-      const sp = facSP(secDef.id);
+      const sp    = facSP(secDef.id);
       const saved = savedPerSec[secDef.id];
-      sp.photos = saved.map(p => ({ ...p }));
-      sp.orig   = saved.map(p => ({ ...p }));
+      sp.photos   = saved.map(p => ({ ...p }));
+      sp.orig     = saved.map(p => ({ ...p }));
       sp.toDelete.clear();
     });
     _facility.editing = false;
     const container = document.getElementById("facilities-container");
     renderFacilityContainer(container);
     setPageBarIdle("facility-bar-acts", enterFacilityEdit);
-    showToast("保存しました！（サイト反映まで約1分）");
+    showToast("保存しました！");
   } catch (err) {
     showToast("エラー: " + err.message, true);
     if (commitBtn) setBusy(commitBtn, false);
@@ -388,13 +460,12 @@ async function renderGallery() {
   const container = document.getElementById("gallery-container");
   container.innerHTML = "<div class='a-loading'>ギャラリーを読み込み中…</div>";
   let photosData;
-  try { photosData = (await loadPhotosJson()).content; }
+  try { photosData = await loadPhotosJson(); }
   catch (err) { container.innerHTML = `<div class='a-err-msg'>読み込み失敗: ${err.message}</div>`; return; }
   container.innerHTML = "";
 
-  // sections from JSON + fill-in from GALLERY_SECTIONS if missing
   const jsonSecs = photosData.sections || [];
-  const defs = jsonSecs.map(s => ({
+  const defs     = jsonSecs.map(s => ({
     id: s.id, title: s.title, title_en: s.title_en || "", folder: getGalleryFolder(s.id)
   }));
   GALLERY_SECTIONS.forEach(gs => { if (!defs.find(s => s.id === gs.id)) defs.push({ ...gs }); });
@@ -404,7 +475,7 @@ async function renderGallery() {
   _gallery.delSecIds.clear();
 
   jsonSecs.forEach(s => {
-    const sp = galSP(s.id);
+    const sp  = galSP(s.id);
     sp.photos = (s.photos || []).map(p => ({ ...p }));
     sp.orig   = (s.photos || []).map(p => ({ ...p }));
     sp.toDelete.clear();
@@ -433,9 +504,9 @@ function cancelGalleryEdit() {
     sp.photos = sp.orig.map(p => ({ ...p }));
     sp.toDelete.clear();
   });
-  _gallery.secDefs = _gallery.origSecDefs.map(s => ({ ...s }));
+  _gallery.secDefs   = _gallery.origSecDefs.map(s => ({ ...s }));
   _gallery.delSecIds.clear();
-  _gallery.editing = false;
+  _gallery.editing   = false;
   const container = document.getElementById("gallery-container");
   renderGalleryContainer(container);
   setPageBarIdle("gallery-bar-acts", enterGalleryEdit);
@@ -445,40 +516,36 @@ async function commitGalleryChanges() {
   const commitBtn = document.querySelector("#gallery-bar-acts .a-btn-commit");
   if (commitBtn) setBusy(commitBtn, true);
   try {
-    let uploaded = 0;
-    const totalNew = _gallery.secDefs.reduce((n, d) => n + galSP(d.id).photos.filter(p => p._isNew).length, 0);
+    let uploaded  = 0;
+    const totalNew    = _gallery.secDefs.reduce((n, d) => n + galSP(d.id).photos.filter(p => p._isNew).length, 0);
     const savedPerSec = {};
 
     for (const secDef of _gallery.secDefs) {
-      const sp = galSP(secDef.id);
+      const sp    = galSP(secDef.id);
       const saved = [];
       for (const photo of sp.photos) {
         if (photo._isNew) {
           uploaded++;
           if (totalNew > 1 && commitBtn) commitBtn.textContent = `アップロード中 ${uploaded}/${totalNew}…`;
-          const fname = `${Date.now()}_${Math.random().toString(36).slice(2,6)}.jpg`;
-          const path  = `${secDef.folder}/${fname}`;
-          await ghPut(path, await compressImage(photo._file), `Add: ${secDef.id}/${fname}`);
+          const result = await cldUploadNew(photo._file, secDef.folder);
           URL.revokeObjectURL(photo._previewUrl);
-          saved.push({ path, alt: photo.alt || "" });
+          saved.push({ path: result.path, publicId: result.publicId, alt: photo.alt || "" });
         } else {
-          saved.push({ path: photo.path, alt: photo.alt || "" });
+          saved.push({ path: photo.path, publicId: photo.publicId || null, alt: photo.alt || "" });
         }
       }
       savedPerSec[secDef.id] = saved;
     }
 
-    // ギャラリーのみファイル削除
+    // Cloudinaryから削除
     for (const sp of Object.values(_gallery.secPhotos)) {
-      for (const delPath of sp.toDelete) {
-        try { const fd = await ghGet(delPath); await ghDel(delPath, fd.sha, `Delete: ${delPath}`); } catch {}
+      for (const pubId of sp.toDelete) {
+        try { await cldDestroy(pubId); } catch {}
       }
     }
 
-    const { content, sha } = await loadPhotosJson();
-    // 削除セクションを除去
+    const content = await loadPhotosJson();
     content.sections = (content.sections || []).filter(s => !_gallery.delSecIds.has(s.id));
-    // 各セクションを更新/追加
     for (const secDef of _gallery.secDefs) {
       let s = content.sections.find(s => s.id === secDef.id);
       if (!s) {
@@ -490,28 +557,27 @@ async function commitGalleryChanges() {
       }
       s.photos = savedPerSec[secDef.id] || [];
     }
-    // 現在の並び順に揃える
     const order = _gallery.secDefs.map(s => s.id);
     content.sections.sort((a, b) => {
       const ia = order.indexOf(a.id), ib = order.indexOf(b.id);
       return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
     });
-    await savePhotosJson(content, sha, "Update gallery sections");
+    await savePhotosJson(content);
 
     _gallery.origSecDefs = _gallery.secDefs.map(s => ({ ...s }));
     _gallery.delSecIds.clear();
     _gallery.secDefs.forEach(secDef => {
       const sp    = galSP(secDef.id);
       const saved = savedPerSec[secDef.id] || [];
-      sp.photos = saved.map(p => ({ ...p }));
-      sp.orig   = saved.map(p => ({ ...p }));
+      sp.photos   = saved.map(p => ({ ...p }));
+      sp.orig     = saved.map(p => ({ ...p }));
       sp.toDelete.clear();
     });
     _gallery.editing = false;
     const container = document.getElementById("gallery-container");
     renderGalleryContainer(container);
     setPageBarIdle("gallery-bar-acts", enterGalleryEdit);
-    showToast("保存しました！（サイト反映まで約1分）");
+    showToast("保存しました！");
   } catch (err) {
     showToast("エラー: " + err.message, true);
     if (commitBtn) setBusy(commitBtn, false);
@@ -530,8 +596,7 @@ function createSectionEl(isGallery, secDef) {
   const wrapper = document.createElement("div");
   wrapper.className = "a-section";
 
-  // ── ヘッダー ──────────────────────────────────────────────
-  const header = document.createElement("div");
+  const header   = document.createElement("div");
   header.className = "a-section-header";
 
   const titleRow = document.createElement("div");
@@ -540,7 +605,6 @@ function createSectionEl(isGallery, secDef) {
   if (isGallery && !isNew) {
     showTitleView(titleRow, secDef, secDef);
   } else {
-    // facility または新規セクションは固定タイトル
     const t  = secDef.title    || "";
     const te = secDef.title_en || "";
     titleRow.innerHTML = te
@@ -552,7 +616,7 @@ function createSectionEl(isGallery, secDef) {
 
   if (isGallery && editing) {
     const delSecBtn = document.createElement("button");
-    delSecBtn.className = "a-btn-del-section";
+    delSecBtn.className   = "a-btn-del-section";
     delSecBtn.textContent = "🗑️ カテゴリーを削除";
     delSecBtn.addEventListener("click", () => deleteGallerySection(secDef.id, wrapper));
     header.appendChild(delSecBtn);
@@ -560,7 +624,6 @@ function createSectionEl(isGallery, secDef) {
 
   wrapper.appendChild(header);
 
-  // ── グリッド ──────────────────────────────────────────────
   const grid = document.createElement("div");
   grid.className = "a-grid";
   wrapper.appendChild(grid);
@@ -574,7 +637,7 @@ function createSectionEl(isGallery, secDef) {
 // ================================================================
 
 function deleteGallerySection(secId, wrapperEl) {
-  if (!confirm("このカテゴリーを削除しますか？\n（写真ファイルは保持されます）")) return;
+  if (!confirm("このカテゴリーを削除しますか？\n（Cloudinary上の写真ファイルは保持されます）")) return;
   if (_gallery.origSecDefs.some(s => s.id === secId)) _gallery.delSecIds.add(secId);
   _gallery.secDefs = _gallery.secDefs.filter(s => s.id !== secId);
   const sp = _gallery.secPhotos[secId];
@@ -587,14 +650,14 @@ function createAddSectionCard(container) {
   card.className = "a-add-section-card";
 
   const showBtn = () => {
-    card.innerHTML = `<span class="a-add-sec-icon">＋</span><span>カテゴリーを追加</span>`;
+    card.innerHTML    = `<span class="a-add-sec-icon">＋</span><span>カテゴリーを追加</span>`;
     card.style.cursor = "pointer";
-    card.onclick = showForm;
+    card.onclick      = showForm;
   };
 
   const showForm = () => {
     card.style.cursor = "default";
-    card.innerHTML = `
+    card.innerHTML    = `
       <div class="a-add-sec-form">
         <input class="a-input-title"    placeholder="カテゴリー名（日本語）">
         <input class="a-input-title-en" placeholder="Category Name (English)">
@@ -603,8 +666,7 @@ function createAddSectionCard(container) {
       </div>`;
     card.onclick = null;
     card.querySelector(".a-btn-add-sec-cancel").addEventListener("click", e => {
-      e.stopPropagation();
-      showBtn();
+      e.stopPropagation(); showBtn();
     });
     card.querySelector(".a-btn-add-sec-ok").addEventListener("click", e => {
       e.stopPropagation();
@@ -612,7 +674,7 @@ function createAddSectionCard(container) {
       const title_en = card.querySelector(".a-input-title-en").value.trim();
       if (!title) return;
       const newId  = `sec_${Date.now()}`;
-      const secDef = { id: newId, title, title_en, folder: `assets/images/${newId}` };
+      const secDef = { id: newId, title, title_en, folder: `retvil/gallery/${newId}` };
       _gallery.secDefs.push(secDef);
       _gallery.secPhotos[newId] = { photos: [], orig: [], toDelete: new Set() };
       container.insertBefore(createSectionEl(true, secDef), card);
@@ -646,8 +708,8 @@ function makePhotoCard(photo, idx, sp, gridEl, editing, isGallery, secDef) {
   const imgWrap = document.createElement("div");
   imgWrap.className = "a-img-wrap";
   const img = document.createElement("img");
-  img.src = photo._previewUrl || photo.path;
-  img.alt = photo.alt || "";
+  img.src     = photo._previewUrl || photo.path;
+  img.alt     = photo.alt || "";
   img.loading = "lazy";
   img.onerror = () => { imgWrap.innerHTML = '<div class="a-no-img">画像なし</div>'; };
   imgWrap.appendChild(img);
@@ -656,7 +718,7 @@ function makePhotoCard(photo, idx, sp, gridEl, editing, isGallery, secDef) {
   const info = document.createElement("div");
   info.className = "a-info";
   const desc = document.createElement("div");
-  desc.className = "a-desc";
+  desc.className   = "a-desc";
   desc.textContent = photo.alt || "（説明なし）";
   info.appendChild(desc);
   card.appendChild(info);
@@ -665,18 +727,18 @@ function makePhotoCard(photo, idx, sp, gridEl, editing, isGallery, secDef) {
     const delBtn = document.createElement("button");
     delBtn.className = "a-card-del";
     delBtn.innerHTML = "&times;";
-    delBtn.title = "削除";
+    delBtn.title     = "削除";
     delBtn.addEventListener("click", e => {
       e.stopPropagation();
       if (photo._isNew) URL.revokeObjectURL(photo._previewUrl);
-      else if (isGallery) sp.toDelete.add(photo.path);
+      else if (isGallery && photo.publicId) sp.toDelete.add(photo.publicId);
       sp.photos.splice(idx, 1);
       refreshGrid(gridEl, sp, editing, isGallery, secDef);
     });
     imgWrap.appendChild(delBtn);
 
     const handle = document.createElement("div");
-    handle.className = "a-drag-handle";
+    handle.className   = "a-drag-handle";
     handle.textContent = "⠿";
     imgWrap.appendChild(handle);
 
@@ -686,14 +748,14 @@ function makePhotoCard(photo, idx, sp, gridEl, editing, isGallery, secDef) {
       card.classList.add("a-dragging");
       e.dataTransfer.effectAllowed = "move";
     });
-    card.addEventListener("dragend", () => card.classList.remove("a-dragging"));
-    card.addEventListener("dragover", e => {
+    card.addEventListener("dragend",   () => card.classList.remove("a-dragging"));
+    card.addEventListener("dragover",  e => {
       if (_dragSecId !== secDef.id || _dragIdx === idx) return;
       e.preventDefault();
       card.classList.add("a-drag-over");
     });
     card.addEventListener("dragleave", () => card.classList.remove("a-drag-over"));
-    card.addEventListener("drop", e => {
+    card.addEventListener("drop",      e => {
       e.preventDefault();
       card.classList.remove("a-drag-over");
       if (_dragSecId !== secDef.id || _dragIdx < 0 || _dragIdx === idx) return;
@@ -712,8 +774,10 @@ function makeAddCard(sp, gridEl, isGallery, secDef) {
   card.className = "a-card a-add-card";
   card.innerHTML = '<span class="a-add-icon">＋</span>';
 
-  const inp = document.createElement("input");
-  inp.type = "file"; inp.accept = "image/*"; inp.multiple = true;
+  const inp      = document.createElement("input");
+  inp.type       = "file";
+  inp.accept     = "image/*";
+  inp.multiple   = true;
   inp.style.display = "none";
   card.appendChild(inp);
 
@@ -721,7 +785,7 @@ function makeAddCard(sp, gridEl, isGallery, secDef) {
   inp.addEventListener("change", () => {
     Array.from(inp.files).forEach(file => {
       sp.photos.push({
-        path: "", alt: file.name.replace(/\.[^.]+$/, ""),
+        path: "", publicId: null, alt: file.name.replace(/\.[^.]+$/, ""),
         _isNew: true, _file: file, _previewUrl: URL.createObjectURL(file)
       });
     });
@@ -766,15 +830,17 @@ function showTitleEdit(titleRow, sec, section) {
     if (!newTitle) return;
     setBusy(btn, true);
     try {
-      const { content, sha } = await loadPhotosJson();
+      const content = await loadPhotosJson();
+      if (!content.sections) content.sections = [];
       let s = content.sections.find(s => s.id === section.id);
       if (!s) {
         s = { id: section.id, title: newTitle, title_en: newTitleEn, photos: [] };
         content.sections.push(s);
       } else {
-        s.title = newTitle; s.title_en = newTitleEn;
+        s.title    = newTitle;
+        s.title_en = newTitleEn;
       }
-      await savePhotosJson(content, sha, `Update section title: ${section.id}`);
+      await savePhotosJson(content);
       sec.title    = newTitle;
       sec.title_en = newTitleEn;
       showTitleView(titleRow, sec, section);

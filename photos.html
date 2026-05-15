@@ -26,9 +26,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const loading  = document.getElementById("photos-loading");
   const sections = document.getElementById("photos-sections");
   try {
-    const res  = await fetch("data/photos.json");
-    if (!res.ok) throw new Error();
-    const data = await res.json();
+    const CLD_URL = "https://res.cloudinary.com/dlbkklzyo/raw/upload/retvil/data/photos.json";
+    let data;
+    try {
+      const r = await fetch(CLD_URL, { cache: "no-cache" });
+      data = r.ok ? await r.json() : null;
+    } catch {}
+    if (!data) {
+      const r = await fetch("data/photos.json");
+      if (!r.ok) throw new Error();
+      data = await r.json();
+    }
 
     data.sections.forEach(section => {
       const items = section.photos.map((p, i) =>

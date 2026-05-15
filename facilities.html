@@ -338,9 +338,13 @@
 <div id="footer-include"></div>
 
 <script>
-fetch('data/photos.json')
-  .then(r => r.json())
-  .then(data => {
+const _CLD = "https://res.cloudinary.com/dlbkklzyo/raw/upload/retvil/data/photos.json";
+(async () => {
+  let data;
+  try { const r = await fetch(_CLD, { cache: "no-cache" }); data = r.ok ? await r.json() : null; } catch {}
+  if (!data) { const r = await fetch("data/photos.json"); data = r.ok ? await r.json() : null; }
+  if (!data) return;
+  (() => {
     (data.facility_sections || []).forEach(sec => {
       const row = document.querySelector(`[data-facility-id="${sec.id}"]`);
       if (!row || !sec.photos || !sec.photos.length) return;
@@ -348,8 +352,8 @@ fetch('data/photos.json')
         `<img src="${p.path}" alt="${p.alt || ''}">`
       ).join('');
     });
-  })
-  .catch(() => {});
+  })();
+})();
 </script>
 
 </body>
