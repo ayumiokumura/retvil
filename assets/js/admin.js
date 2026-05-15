@@ -20,15 +20,15 @@ const REQUIRED_PHOTOS = [
 ];
 
 const GALLERY_SECTIONS = [
-  { id: "interior", title: "内装",            title_en: "Interior",              folder: "retvil/gallery/interior" },
-  { id: "exterior", title: "外装",            title_en: "Exterior & Garden",     folder: "retvil/gallery/exterior" },
-  { id: "amenity",  title: "アメニティ・設備", title_en: "Amenities & Equipment", folder: "retvil/gallery/amenity"  },
+  { id: "interior", title: "内装",            title_en: "Interior",              folder: "gallery/interior" },
+  { id: "exterior", title: "外装",            title_en: "Exterior & Garden",     folder: "gallery/exterior" },
+  { id: "amenity",  title: "アメニティ・設備", title_en: "Amenities & Equipment", folder: "gallery/amenity"  },
 ];
 
 const FACILITY_SECTIONS = [
-  { id: "bath",    title: "バス・トイレ", folder: "retvil/facilities/bath"    },
-  { id: "ac",      title: "エアコン",     folder: "retvil/facilities/ac"      },
-  { id: "parking", title: "駐車場",       folder: "retvil/facilities/parking" },
+  { id: "bath",    title: "バス・トイレ", folder: "facilities/bath"    },
+  { id: "ac",      title: "エアコン",     folder: "facilities/ac"      },
+  { id: "parking", title: "駐車場",       folder: "facilities/parking" },
 ];
 
 // ================================================================
@@ -60,7 +60,7 @@ function facSP(id) {
 }
 function getGalleryFolder(id) {
   const d = GALLERY_SECTIONS.find(s => s.id === id);
-  return d ? d.folder : `retvil/gallery/${id}`;
+  return d ? d.folder : `gallery/${id}`;
 }
 function anyEditing() { return _gallery.editing || _facility.editing; }
 
@@ -677,7 +677,7 @@ function createAddSectionCard(container) {
       const title_en = card.querySelector(".a-input-title-en").value.trim();
       if (!title) return;
       const newId  = `sec_${Date.now()}`;
-      const secDef = { id: newId, title, title_en, folder: `retvil/gallery/${newId}` };
+      const secDef = { id: newId, title, title_en, folder: `gallery/${newId}` };
       _gallery.secDefs.push(secDef);
       _gallery.secPhotos[newId] = { photos: [], orig: [], toDelete: new Set() };
       container.insertBefore(createSectionEl(true, secDef), card);
