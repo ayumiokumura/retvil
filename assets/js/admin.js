@@ -13,10 +13,10 @@ const PHOTOS_JSON_PID  = "retvil/data/photos.json";
 const PHOTOS_JSON_URL  = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/${PHOTOS_JSON_PID}`;
 
 const REQUIRED_PHOTOS = [
-  { publicId: "retvil/required/nasu",  desc: "トップページ 背景",     pages: "index.html" },
-  { publicId: "retvil/required/logo",  desc: "ロゴ（丸アイコン）",    pages: "index.html" },
-  { publicId: "retvil/required/yumi",  desc: "オーナー YUMI 顔写真",  pages: "owner.html" },
-  { publicId: "retvil/required/mikio", desc: "オーナー MIKIO 顔写真", pages: "owner.html" },
+  { publicId: "retvil/required/nasu",  fallback: "assets/images/nasu.jpg",        desc: "トップページ 背景",     pages: "index.html" },
+  { publicId: "retvil/required/logo",  fallback: "assets/images/logo.png",        desc: "ロゴ（丸アイコン）",    pages: "index.html" },
+  { publicId: "retvil/required/yumi",  fallback: "assets/images/owner_yumi.png",  desc: "オーナー YUMI 顔写真",  pages: "owner.html" },
+  { publicId: "retvil/required/mikio", fallback: "assets/images/owner_mikio.png", desc: "オーナー MIKIO 顔写真", pages: "owner.html" },
 ];
 
 const GALLERY_SECTIONS = [
@@ -293,7 +293,7 @@ function renderRequired() {
     card.innerHTML = `
       <div class="a-img-wrap">
         <img src="${imgUrl}" alt="${req.desc}" loading="lazy"
-             onerror="this.parentElement.innerHTML='<div class=a-no-img>未アップロード</div>'">
+             onerror="this.src='${req.fallback}';this.onerror=null;">
       </div>
       <div class="a-info">
         <div class="a-desc">${req.desc}</div>
