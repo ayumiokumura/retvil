@@ -280,15 +280,10 @@ function showAdmin() {
   renderGallery();
 }
 
-async function checkMigrationNeeded() {
-  try {
-    const r = await fetch(PHOTOS_JSON_URL, { cache: "no-cache" });
-    if (!r.ok) {
-      const sec = document.getElementById("migration-section");
-      sec.style.display = "block";
-      document.getElementById("migration-btn").addEventListener("click", runMigration);
-    }
-  } catch {}
+function checkMigrationNeeded() {
+  if (localStorage.getItem("rv_migrated") === "1") return;
+  document.getElementById("migration-section").style.display = "block";
+  document.getElementById("migration-btn").addEventListener("click", runMigration);
 }
 
 async function runMigration() {
@@ -345,6 +340,7 @@ async function runMigration() {
     statusEl.textContent = "photos.json を保存中…";
     await savePhotosJson(photosData);
 
+    localStorage.setItem("rv_migrated", "1");
     statusEl.innerHTML = "✅ 移行完了！ページを再読み込みします…";
     setTimeout(() => location.reload(), 2000);
   } catch (err) {
