@@ -231,6 +231,11 @@ function setBusy(btn, busy) {
 // ================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    sessionStorage.removeItem(SESSION_KEY);
+    location.reload();
+  });
+
   if (sessionStorage.getItem(SESSION_KEY) === "1" && hasCldCreds()) {
     showAdmin();
     return;
@@ -263,11 +268,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pw !== ADMIN_PASS) { err.textContent = "パスワードが正しくありません"; return; }
     sessionStorage.setItem(SESSION_KEY, "1");
     showAdmin();
-  });
-
-  document.getElementById("logout-btn").addEventListener("click", () => {
-    sessionStorage.removeItem(SESSION_KEY);
-    location.reload();
   });
 });
 
