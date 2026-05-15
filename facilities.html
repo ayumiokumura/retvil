@@ -332,8 +332,7 @@
 const _CLD = "https://res.cloudinary.com/dlbkklzyo/raw/upload/retvil/data/photos.json";
 (async () => {
   let data;
-  try { const r = await fetch(_CLD, { cache: "no-cache" }); data = r.ok ? await r.json() : null; } catch {}
-  if (!data) { const r = await fetch("data/photos.json"); data = r.ok ? await r.json() : null; }
+  try { const r = await fetch(_CLD, { cache: "no-cache" }); if (r.ok) data = await r.json(); } catch {}
   if (!data) return;
   (() => {
     (data.facility_sections || []).forEach(sec => {

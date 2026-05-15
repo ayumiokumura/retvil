@@ -13,10 +13,10 @@ const PHOTOS_JSON_PID  = "retvil/data/photos.json";
 const PHOTOS_JSON_URL  = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/${PHOTOS_JSON_PID}`;
 
 const REQUIRED_PHOTOS = [
-  { publicId: "retvil/required/nasu",  fallback: "assets/images/nasu.jpg",        desc: "トップページ 背景",     pages: "index.html" },
-  { publicId: "retvil/required/logo",  fallback: "assets/images/logo.png",        desc: "ロゴ（丸アイコン）",    pages: "index.html" },
-  { publicId: "retvil/required/yumi",  fallback: "assets/images/owner_yumi.png",  desc: "オーナー YUMI 顔写真",  pages: "owner.html" },
-  { publicId: "retvil/required/mikio", fallback: "assets/images/owner_mikio.png", desc: "オーナー MIKIO 顔写真", pages: "owner.html" },
+  { publicId: "retvil/required/nasu",  desc: "トップページ 背景",     pages: "index.html" },
+  { publicId: "retvil/required/logo",  desc: "ロゴ（丸アイコン）",    pages: "index.html" },
+  { publicId: "retvil/required/yumi",  desc: "オーナー YUMI 顔写真",  pages: "owner.html" },
+  { publicId: "retvil/required/mikio", desc: "オーナー MIKIO 顔写真", pages: "owner.html" },
 ];
 
 const GALLERY_SECTIONS = [
@@ -157,16 +157,9 @@ async function cldDestroy(publicId) {
 // ================================================================
 
 async function loadPhotosJson() {
-  try {
-    const res = await fetch(PHOTOS_JSON_URL, { cache: "no-cache" });
-    if (res.ok) return res.json();
-  } catch {}
-  // Cloudinaryにまだない場合はリポジトリのファイルにフォールバック
-  try {
-    const res = await fetch("data/photos.json", { cache: "no-cache" });
-    if (res.ok) return res.json();
-  } catch {}
-  return { sections: [], facility_sections: [] };
+  const res = await fetch(PHOTOS_JSON_URL, { cache: "no-cache" });
+  if (!res.ok) throw new Error("photos.json の取得に失敗しました");
+  return res.json();
 }
 
 async function savePhotosJson(content) {
@@ -274,81 +267,9 @@ document.addEventListener("DOMContentLoaded", () => {
 function showAdmin() {
   document.getElementById("admin-login").style.display = "none";
   document.getElementById("admin-main").style.display  = "block";
-  checkMigrationNeeded();
   renderRequired();
   renderFacilities();
   renderGallery();
-}
-
-function checkMigrationNeeded() {
-  if (localStorage.getItem("rv_migrated") === "1") {
-    document.getElementById("migration-section").style.display = "none";
-    return;
-  }
-  document.getElementById("migration-btn").addEventListener("click", runMigration);
-}
-
-async function runMigration() {
-  const statusEl = document.getElementById("migration-status");
-  const btn      = document.getElementById("migration-btn");
-  setBusy(btn, true);
-  try {
-    statusEl.textContent = "既存データを読み込み中…";
-    const res = await fetch("data/photos.json", { cache: "no-cache" });
-    if (!res.ok) throw new Error("data/photos.json が見つかりません");
-    const photosData = await res.json();
-
-    const galPhotos = (photosData.sections || [])
-      .flatMap(s => (s.photos || []).filter(p => !p.path.startsWith("http")));
-    const facPhotos = (photosData.facility_sections || [])
-      .flatMap(s => (s.photos || []).filter(p => !p.path.startsWith("http")));
-    const total = galPhotos.length + facPhotos.length + REQUIRED_PHOTOS.length;
-    let done = 0;
-
-    for (const sec of photosData.sections || []) {
-      for (const photo of sec.photos || []) {
-        if (photo.path.startsWith("http")) continue;
-        done++;
-        statusEl.textContent = `ギャラリー写真 ${done}/${total}（${photo.alt || photo.path}）をアップロード中…`;
-        const blob   = await fetch(photo.path).then(r => { if (!r.ok) throw new Error(`取得失敗: ${photo.path}`); return r.blob(); });
-        const file   = new File([blob], "photo.jpg", { type: "image/jpeg" });
-        const result = await cldUploadNew(file, `gallery/${sec.id}`);
-        photo.path     = result.path;
-        photo.publicId = result.publicId;
-      }
-    }
-
-    for (const sec of photosData.facility_sections || []) {
-      for (const photo of sec.photos || []) {
-        if (photo.path.startsWith("http")) continue;
-        done++;
-        statusEl.textContent = `施設写真 ${done}/${total}（${photo.alt || photo.path}）をアップロード中…`;
-        const blob   = await fetch(photo.path).then(r => { if (!r.ok) throw new Error(`取得失敗: ${photo.path}`); return r.blob(); });
-        const file   = new File([blob], "photo.jpg", { type: "image/jpeg" });
-        const result = await cldUploadNew(file, `facilities/${sec.id}`);
-        photo.path     = result.path;
-        photo.publicId = result.publicId;
-      }
-    }
-
-    for (const req of REQUIRED_PHOTOS) {
-      done++;
-      statusEl.textContent = `必須写真 ${done}/${total}（${req.desc}）をアップロード中…`;
-      const blob = await fetch(req.fallback).then(r => { if (!r.ok) throw new Error(`取得失敗: ${req.fallback}`); return r.blob(); });
-      const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
-      await cldUploadReplace(file, req.publicId);
-    }
-
-    statusEl.textContent = "photos.json を保存中…";
-    await savePhotosJson(photosData);
-
-    localStorage.setItem("rv_migrated", "1");
-    statusEl.innerHTML = "✅ 移行完了！ページを再読み込みします…";
-    setTimeout(() => location.reload(), 2000);
-  } catch (err) {
-    statusEl.textContent = "❌ エラー: " + err.message;
-    setBusy(btn, false);
-  }
 }
 
 // ================================================================
@@ -364,8 +285,7 @@ function renderRequired() {
     card.className = "a-card";
     card.innerHTML = `
       <div class="a-img-wrap">
-        <img src="${imgUrl}" alt="${req.desc}" loading="lazy"
-             onerror="this.src='${req.fallback}';this.onerror=null;">
+        <img src="${imgUrl}" alt="${req.desc}" loading="lazy">
       </div>
       <div class="a-info">
         <div class="a-desc">${req.desc}</div>
