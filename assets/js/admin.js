@@ -159,11 +159,14 @@ async function cldDestroy(publicId) {
 async function loadPhotosJson() {
   try {
     const res = await fetch(PHOTOS_JSON_URL, { cache: "no-cache" });
-    if (!res.ok) return { sections: [], facility_sections: [] };
-    return res.json();
-  } catch {
-    return { sections: [], facility_sections: [] };
-  }
+    if (res.ok) return res.json();
+  } catch {}
+  // Cloudinaryにまだない場合はリポジトリのファイルにフォールバック
+  try {
+    const res = await fetch("data/photos.json", { cache: "no-cache" });
+    if (res.ok) return res.json();
+  } catch {}
+  return { sections: [], facility_sections: [] };
 }
 
 async function savePhotosJson(content) {
