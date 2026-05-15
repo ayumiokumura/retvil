@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+
+Sitemap: https://ayumiokumura.github.io/retvil/sitemap.xml
