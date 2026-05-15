@@ -281,8 +281,10 @@ function showAdmin() {
 }
 
 function checkMigrationNeeded() {
-  if (localStorage.getItem("rv_migrated") === "1") return;
-  document.getElementById("migration-section").style.display = "block";
+  if (localStorage.getItem("rv_migrated") === "1") {
+    document.getElementById("migration-section").style.display = "none";
+    return;
+  }
   document.getElementById("migration-btn").addEventListener("click", runMigration);
 }
 
