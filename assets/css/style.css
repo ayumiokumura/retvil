@@ -84,7 +84,7 @@ body {
   position: sticky;
   top: 0;
   height: 100vh;
-  background: url("../images/nasu.jpg") center/cover no-repeat;
+  background: url("https://res.cloudinary.com/dlbkklzyo/image/upload/f_auto,q_auto/retvil/required/nasu") center/cover no-repeat;
   overflow: hidden;
 }
 
