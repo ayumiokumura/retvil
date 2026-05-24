@@ -233,6 +233,46 @@
     }
     .a-card-del:hover { background: #c0392b; }
 
+    /* ---- 認証情報モーダル ---- */
+    #creds-modal {
+      position: fixed; inset: 0; z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .creds-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.45);
+    }
+    .creds-box {
+      position: relative; z-index: 1;
+      background: #fff; border-radius: 12px; padding: 32px 28px;
+      max-width: 400px; width: calc(100% - 48px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    .creds-box h2 { font-size: 1.1rem; margin-bottom: 8px; }
+    .creds-box p  { font-size: .83rem; color: #888; margin-bottom: 20px; }
+    .creds-box label { display: block; font-size: .82rem; color: #666; margin-bottom: 4px; margin-top: 14px; }
+    .creds-box label:first-of-type { margin-top: 0; }
+    .creds-box input {
+      width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 7px;
+      font-size: .9rem; outline: none; box-sizing: border-box;
+    }
+    .creds-box input:focus { border-color: #8B7355; }
+    .creds-actions { display: flex; gap: 10px; margin-top: 22px; }
+    .creds-actions button[type="submit"] {
+      flex: 1; padding: 10px; background: #8B7355; color: #fff;
+      border: none; border-radius: 7px; font-size: .9rem; cursor: pointer; transition: background .2s;
+    }
+    .creds-actions button[type="submit"]:hover { background: #6e5b42; }
+    .creds-actions button[type="button"] {
+      flex: 1; padding: 10px; background: #fff; color: #666;
+      border: 1px solid #ccc; border-radius: 7px; font-size: .9rem; cursor: pointer;
+    }
+    #creds-change-btn {
+      background: transparent; border: 1px solid rgba(255,255,255,.25); color: rgba(255,255,255,.65);
+      padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: .75rem;
+    }
+    #creds-change-btn:hover { border-color: rgba(255,255,255,.55); color: #fff; }
+
     /* Drag handle overlay */
     .a-drag-handle {
       position: absolute; top: 6px; right: 6px;
@@ -323,8 +363,30 @@
 <div id="admin-main">
   <header class="a-header">
     <h1>Ret.Village 写真管理</h1>
-    <button id="logout-btn">ログアウト</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="creds-change-btn">認証情報</button>
+      <button id="logout-btn">ログアウト</button>
+    </div>
   </header>
+
+  <!-- 認証情報変更モーダル -->
+  <div id="creds-modal" style="display:none;">
+    <div class="creds-backdrop"></div>
+    <div class="creds-box">
+      <h2>認証情報を変更</h2>
+      <p>Cloudinary の API Key と Secret を再入力してください。</p>
+      <form id="creds-form">
+        <label for="creds-key">API Key</label>
+        <input type="text" id="creds-key" autocomplete="off" placeholder="874958…">
+        <label for="creds-secret">API Secret（変更する場合のみ入力）</label>
+        <input type="password" id="creds-secret" autocomplete="off" placeholder="D6Buli8C…">
+        <div class="creds-actions">
+          <button type="submit">保存</button>
+          <button type="button" id="creds-cancel">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <div class="a-body">
 

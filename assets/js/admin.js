@@ -282,6 +282,30 @@ document.addEventListener("DOMContentLoaded", () => {
     location.reload();
   });
 
+  // 認証情報変更モーダル
+  const credsModal  = document.getElementById("creds-modal");
+  document.getElementById("creds-change-btn").addEventListener("click", () => {
+    document.getElementById("creds-key").value    = getApiKey();
+    document.getElementById("creds-secret").value = "";
+    credsModal.style.display = "flex";
+  });
+  document.getElementById("creds-cancel").addEventListener("click", () => {
+    credsModal.style.display = "none";
+  });
+  document.querySelector(".creds-backdrop").addEventListener("click", () => {
+    credsModal.style.display = "none";
+  });
+  document.getElementById("creds-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const key    = document.getElementById("creds-key").value.trim();
+    const secret = document.getElementById("creds-secret").value.trim();
+    if (!key) return;
+    localStorage.setItem(API_KEY_STORE, key);
+    if (secret) localStorage.setItem(API_SECRET_STORE, secret);
+    credsModal.style.display = "none";
+    showToast("認証情報を更新しました。");
+  });
+
   if (sessionStorage.getItem(SESSION_KEY) === "1" && hasCldCreds()) {
     showAdmin();
     return;
