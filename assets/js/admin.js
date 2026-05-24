@@ -25,10 +25,45 @@ const GALLERY_SECTIONS = [
   { id: "amenity",  title: "アメニティ・設備", title_en: "Amenities & Equipment", folder: "gallery/amenity"  },
 ];
 
-const FACILITY_SECTIONS = [
-  { id: "bath",    title: "バス・トイレ", folder: "facilities/bath"    },
-  { id: "ac",      title: "エアコン",     folder: "facilities/ac"      },
-  { id: "parking", title: "駐車場",       folder: "facilities/parking" },
+const DEFAULT_FACILITY_SECTIONS = [
+  {
+    id: "bath", title_ja: "バス・トイレ", title_en: "Bath & Toilet",
+    folder: "facilities/bath",
+    desc_ja: "温水洗浄便座（Washlet）\n大型浴室（シャワー・給湯／追い炊き付き）― ご家族で一緒に入れます\nシャンプー・コンディショナー・ボディシャンプー完備\nバスタオル・フェイスタオル（人数分）\nヘアドライヤー\n乾燥機付洗濯機（無料）\n洗剤・柔軟剤",
+    desc_en: "Washlet (warm water toilet seat)\nLarge bathroom with shower, hot water & reheat function — spacious enough for the whole family\nShampoo, conditioner & body wash provided\nBath towels & face towels (for each guest)\nHair dryer\nWasher/dryer (free of charge)\nLaundry detergent & fabric softener",
+    note_ja: "＊歯ブラシはプラスチックごみ削減の観点でご用意しておりません。各自お持ちください。",
+    note_en: "＊Toothbrushes are not provided in order to reduce plastic waste. Please bring your own."
+  },
+  {
+    id: "ac", title_ja: "エアコン", title_en: "Air Conditioning",
+    folder: "facilities/ac",
+    desc_ja: "リビング・寝室1・寝室2 に各1台ずつ設置しています。",
+    desc_en: "One unit installed in the living room, Bedroom 1, and Bedroom 2 respectively.",
+    note_ja: "", note_en: ""
+  },
+  {
+    id: "parking", title_ja: "駐車場", title_en: "Parking",
+    folder: "facilities/parking",
+    desc_ja: "3台まで駐車可能です。施設前に縦列でご利用いただけます。",
+    desc_en: "Up to 3 cars can be parked in tandem in front of the facility.",
+    note_ja: "", note_en: ""
+  }
+];
+
+const HOUSE_RULE_SECTIONS = [
+  { id: "bbq",         title: "BBQについて",           folder: "facilities/rules/bbq" },
+  { id: "garden",      title: "庭・デッキ",             folder: "facilities/rules/garden" },
+  { id: "smoking",     title: "喫煙について",           folder: "facilities/rules/smoking" },
+  { id: "garbage",     title: "ゴミの分別",             folder: "facilities/rules/garbage" },
+  { id: "pet",         title: "ペットについて",         folder: "facilities/rules/pet" },
+  { id: "insects",     title: "虫について",             folder: "facilities/rules/insects" },
+  { id: "appliances",  title: "洗濯機・リモコン",       folder: "facilities/rules/appliances" },
+  { id: "cookware",    title: "調理器具・食器",         folder: "facilities/rules/cookware" },
+  { id: "bedding",     title: "寝具・トイレ",           folder: "facilities/rules/bedding" },
+  { id: "photography", title: "撮影利用について",       folder: "facilities/rules/photography" },
+  { id: "checklist",   title: "ご用意いただくもの",     folder: "facilities/rules/checklist" },
+  { id: "notes",       title: "ご注意事項まとめ",       folder: "facilities/rules/notes" },
+  { id: "emergency",   title: "緊急連絡先",             folder: "facilities/rules/emergency" },
 ];
 
 // ================================================================
@@ -45,8 +80,22 @@ const _gallery = {
 
 const _facility = {
   editing: false,
+  secDefs: [],
+  origSecDefs: [],
+  secPhotos: {},
+  delSecIds: new Set()
+};
+
+const _houseRule = {
+  editing: false,
   secPhotos: {}
 };
+
+function hrSP(id) {
+  if (!_houseRule.secPhotos[id])
+    _houseRule.secPhotos[id] = { photos: [], orig: [], toDelete: new Set() };
+  return _houseRule.secPhotos[id];
+}
 
 function galSP(id) {
   if (!_gallery.secPhotos[id])
@@ -58,11 +107,15 @@ function facSP(id) {
     _facility.secPhotos[id] = { photos: [], orig: [], toDelete: new Set() };
   return _facility.secPhotos[id];
 }
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function getGalleryFolder(id) {
   const d = GALLERY_SECTIONS.find(s => s.id === id);
   return d ? d.folder : `gallery/${id}`;
 }
-function anyEditing() { return _gallery.editing || _facility.editing; }
+function anyEditing() { return _gallery.editing || _facility.editing || _houseRule.editing; }
 
 window.addEventListener("beforeunload", e => {
   if (anyEditing()) { e.preventDefault(); e.returnValue = ""; }
@@ -269,6 +322,7 @@ function showAdmin() {
   document.getElementById("admin-main").style.display  = "block";
   renderRequired();
   renderFacilities();
+  renderHouseRules();
   renderGallery();
 }
 
@@ -349,19 +403,49 @@ function setPageBarEditing(barActsId, onCommit, onCancel) {
 
 async function renderFacilities() {
   const container = document.getElementById("facilities-container");
-  container.innerHTML = "<div class='a-loading'>施設写真を読み込み中…</div>";
+  container.innerHTML = "<div class='a-loading'>施設セクションを読み込み中…</div>";
   let photosData;
   try { photosData = await loadPhotosJson(); }
   catch (err) { container.innerHTML = `<div class='a-err-msg'>読み込み失敗: ${err.message}</div>`; return; }
   container.innerHTML = "";
 
-  const facSecs = photosData.facility_sections || [];
-  FACILITY_SECTIONS.forEach(secDef => {
-    const sec = facSecs.find(s => s.id === secDef.id) || { photos: [] };
-    const sp  = facSP(secDef.id);
-    sp.photos = (sec.photos || []).map(p => ({ ...p }));
-    sp.orig   = (sec.photos || []).map(p => ({ ...p }));
+  const jsonSecs = photosData.facility_sections || [];
+
+  const defs = jsonSecs.map(s => {
+    const d = DEFAULT_FACILITY_SECTIONS.find(d => d.id === s.id) || {};
+    return {
+      id:       s.id,
+      title_ja: s.title_ja !== undefined ? s.title_ja : (d.title_ja || s.title || s.id),
+      title_en: s.title_en !== undefined ? s.title_en : (d.title_en || ''),
+      desc_ja:  s.desc_ja  !== undefined ? s.desc_ja  : (d.desc_ja  || ''),
+      desc_en:  s.desc_en  !== undefined ? s.desc_en  : (d.desc_en  || ''),
+      note_ja:  s.note_ja  !== undefined ? s.note_ja  : (d.note_ja  || ''),
+      note_en:  s.note_en  !== undefined ? s.note_en  : (d.note_en  || ''),
+      folder:   d.folder || `facilities/${s.id}`
+    };
+  });
+
+  DEFAULT_FACILITY_SECTIONS.forEach(d => {
+    if (!defs.find(s => s.id === d.id)) defs.push({ ...d });
+  });
+
+  _facility.secDefs     = defs.map(s => ({ ...s }));
+  _facility.origSecDefs = defs.map(s => ({ ...s }));
+  _facility.delSecIds.clear();
+
+  jsonSecs.forEach(s => {
+    const sp  = facSP(s.id);
+    sp.photos = (s.photos || []).map(p => ({ ...p }));
+    sp.orig   = (s.photos || []).map(p => ({ ...p }));
     sp.toDelete.clear();
+  });
+  DEFAULT_FACILITY_SECTIONS.forEach(d => {
+    if (!jsonSecs.find(s => s.id === d.id)) {
+      const sp  = facSP(d.id);
+      sp.photos = [];
+      sp.orig   = [];
+      sp.toDelete.clear();
+    }
   });
 
   renderFacilityContainer(container);
@@ -370,7 +454,122 @@ async function renderFacilities() {
 
 function renderFacilityContainer(container) {
   container.innerHTML = "";
-  FACILITY_SECTIONS.forEach(secDef => container.appendChild(createSectionEl(false, secDef)));
+  _facility.secDefs.forEach(secDef => container.appendChild(createFacilitySectionEl(secDef)));
+  if (_facility.editing) container.appendChild(createAddFacilitySectionCard(container));
+}
+
+function createFacilitySectionEl(secDef) {
+  const sp      = facSP(secDef.id);
+  const editing = _facility.editing;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "a-section";
+
+  if (editing) {
+    const titleRow = document.createElement("div");
+    titleRow.className = "a-section-header";
+
+    const inputs = document.createElement("div");
+    inputs.className = "a-title-row";
+    inputs.innerHTML = `
+      <input class="a-input-title"    value="${escHtml(secDef.title_ja)}" placeholder="カテゴリー名（日本語）">
+      <input class="a-input-title-en" value="${escHtml(secDef.title_en)}" placeholder="Category Name (English)">
+    `;
+    inputs.querySelector('.a-input-title').addEventListener('input', e => { secDef.title_ja = e.target.value; });
+    inputs.querySelector('.a-input-title-en').addEventListener('input', e => { secDef.title_en = e.target.value; });
+    titleRow.appendChild(inputs);
+
+    const delBtn = document.createElement("button");
+    delBtn.className   = "a-btn-del-section";
+    delBtn.textContent = "カテゴリーを削除";
+    delBtn.addEventListener("click", () => deleteFacilitySection(secDef.id, wrapper));
+    titleRow.appendChild(delBtn);
+
+    wrapper.appendChild(titleRow);
+
+    const descBlock = document.createElement("div");
+    descBlock.className = "a-desc-block";
+    descBlock.innerHTML = `
+      <div class="a-desc-label">説明（日本語）― 1行1項目</div>
+      <textarea class="a-textarea" rows="4" placeholder="1行ごとに箇条書きになります">${escHtml(secDef.desc_ja)}</textarea>
+      <div class="a-desc-label">Description (English) — one item per line</div>
+      <textarea class="a-textarea" rows="4" placeholder="One item per line">${escHtml(secDef.desc_en)}</textarea>
+      <div class="a-desc-label">備考（日本語）</div>
+      <input class="a-input-note" value="${escHtml(secDef.note_ja)}" placeholder="＊...">
+      <div class="a-desc-label">Note (English)</div>
+      <input class="a-input-note" value="${escHtml(secDef.note_en)}" placeholder="＊...">
+    `;
+    const [taJa, taEn] = descBlock.querySelectorAll('textarea');
+    taJa.addEventListener('input', e => { secDef.desc_ja = e.target.value; });
+    taEn.addEventListener('input', e => { secDef.desc_en = e.target.value; });
+    const [noteJa, noteEn] = descBlock.querySelectorAll('.a-input-note');
+    noteJa.addEventListener('input', e => { secDef.note_ja = e.target.value; });
+    noteEn.addEventListener('input', e => { secDef.note_en = e.target.value; });
+    wrapper.appendChild(descBlock);
+  } else {
+    const header = document.createElement("div");
+    header.className = "a-section-header";
+    const te = secDef.title_en ? ` <span class="a-title-en">(${escHtml(secDef.title_en)})</span>` : '';
+    header.innerHTML = `<div class="a-title-row"><h2>${escHtml(secDef.title_ja)}${te}</h2></div>`;
+    wrapper.appendChild(header);
+  }
+
+  const grid = document.createElement("div");
+  grid.className = "a-grid";
+  wrapper.appendChild(grid);
+  refreshGrid(grid, sp, editing, false, secDef);
+
+  return wrapper;
+}
+
+function deleteFacilitySection(secId, wrapperEl) {
+  if (!confirm("このカテゴリーを削除しますか？")) return;
+  if (_facility.origSecDefs.some(s => s.id === secId)) _facility.delSecIds.add(secId);
+  _facility.secDefs = _facility.secDefs.filter(s => s.id !== secId);
+  const sp = _facility.secPhotos[secId];
+  if (sp) sp.photos.forEach(p => { if (p._previewUrl) URL.revokeObjectURL(p._previewUrl); });
+  wrapperEl.remove();
+}
+
+function createAddFacilitySectionCard(container) {
+  const card = document.createElement("div");
+  card.className = "a-add-section-card";
+
+  const showBtn = () => {
+    card.innerHTML    = `<span class="a-add-sec-icon">＋</span><span>カテゴリーを追加</span>`;
+    card.style.cursor = "pointer";
+    card.onclick      = showForm;
+  };
+
+  const showForm = () => {
+    card.style.cursor = "default";
+    card.innerHTML    = `
+      <div class="a-add-sec-form">
+        <input class="a-input-title"    placeholder="カテゴリー名（日本語）">
+        <input class="a-input-title-en" placeholder="Category Name (English)">
+        <button class="a-btn-add-sec-ok">追加</button>
+        <button class="a-btn-add-sec-cancel">キャンセル</button>
+      </div>`;
+    card.onclick = null;
+    card.querySelector(".a-btn-add-sec-cancel").addEventListener("click", e => {
+      e.stopPropagation(); showBtn();
+    });
+    card.querySelector(".a-btn-add-sec-ok").addEventListener("click", e => {
+      e.stopPropagation();
+      const title    = card.querySelector(".a-input-title").value.trim();
+      const title_en = card.querySelector(".a-input-title-en").value.trim();
+      if (!title) return;
+      const newId  = `fac_${Date.now()}`;
+      const secDef = { id: newId, title_ja: title, title_en, desc_ja: '', desc_en: '', note_ja: '', note_en: '', folder: `facilities/${newId}` };
+      _facility.secDefs.push(secDef);
+      _facility.secPhotos[newId] = { photos: [], orig: [], toDelete: new Set() };
+      container.insertBefore(createFacilitySectionEl(secDef), card);
+      showBtn();
+    });
+  };
+
+  showBtn();
+  return card;
 }
 
 function enterFacilityEdit() {
@@ -386,7 +585,9 @@ function cancelFacilityEdit() {
     sp.photos = sp.orig.map(p => ({ ...p }));
     sp.toDelete.clear();
   });
-  _facility.editing = false;
+  _facility.secDefs   = _facility.origSecDefs.map(s => ({ ...s }));
+  _facility.delSecIds.clear();
+  _facility.editing   = false;
   const container = document.getElementById("facilities-container");
   renderFacilityContainer(container);
   setPageBarIdle("facility-bar-acts", enterFacilityEdit);
@@ -397,10 +598,10 @@ async function commitFacilityChanges() {
   if (commitBtn) setBusy(commitBtn, true);
   try {
     let uploaded  = 0;
-    const totalNew    = FACILITY_SECTIONS.reduce((n, d) => n + facSP(d.id).photos.filter(p => p._isNew).length, 0);
+    const totalNew    = _facility.secDefs.reduce((n, d) => n + facSP(d.id).photos.filter(p => p._isNew).length, 0);
     const savedPerSec = {};
 
-    for (const secDef of FACILITY_SECTIONS) {
+    for (const secDef of _facility.secDefs) {
       const sp    = facSP(secDef.id);
       const saved = [];
       for (const photo of sp.photos) {
@@ -419,17 +620,26 @@ async function commitFacilityChanges() {
 
     const content = await loadPhotosJson();
     if (!content.facility_sections) content.facility_sections = [];
-    for (const secDef of FACILITY_SECTIONS) {
+    content.facility_sections = content.facility_sections.filter(s => !_facility.delSecIds.has(s.id));
+    for (const secDef of _facility.secDefs) {
       let s = content.facility_sections.find(s => s.id === secDef.id);
       if (!s) {
-        s = { id: secDef.id, title: secDef.title, photos: [] };
+        s = { id: secDef.id };
         content.facility_sections.push(s);
       }
-      s.photos = savedPerSec[secDef.id];
+      s.title_ja = secDef.title_ja;
+      s.title_en = secDef.title_en;
+      s.desc_ja  = secDef.desc_ja;
+      s.desc_en  = secDef.desc_en;
+      s.note_ja  = secDef.note_ja;
+      s.note_en  = secDef.note_en;
+      s.photos   = savedPerSec[secDef.id];
     }
     await savePhotosJson(content);
 
-    FACILITY_SECTIONS.forEach(secDef => {
+    _facility.origSecDefs = _facility.secDefs.map(s => ({ ...s }));
+    _facility.delSecIds.clear();
+    _facility.secDefs.forEach(secDef => {
       const sp    = facSP(secDef.id);
       const saved = savedPerSec[secDef.id];
       sp.photos   = saved.map(p => ({ ...p }));
@@ -440,6 +650,132 @@ async function commitFacilityChanges() {
     const container = document.getElementById("facilities-container");
     renderFacilityContainer(container);
     setPageBarIdle("facility-bar-acts", enterFacilityEdit);
+    showToast("保存しました！");
+  } catch (err) {
+    showToast("エラー: " + err.message, true);
+    if (commitBtn) setBusy(commitBtn, false);
+  }
+}
+
+// ================================================================
+// ハウスルール写真（house_rule_photos）
+// ================================================================
+
+async function renderHouseRules() {
+  const container = document.getElementById("houserule-container");
+  container.innerHTML = "<div class='a-loading'>ハウスルール写真を読み込み中…</div>";
+  let photosData;
+  try { photosData = await loadPhotosJson(); }
+  catch (err) { container.innerHTML = `<div class='a-err-msg'>読み込み失敗: ${err.message}</div>`; return; }
+  container.innerHTML = "";
+
+  const hrPhotos = photosData.house_rule_photos || {};
+  HOUSE_RULE_SECTIONS.forEach(ruleDef => {
+    const photos = hrPhotos[ruleDef.id] || [];
+    const sp  = hrSP(ruleDef.id);
+    sp.photos = photos.map(p => ({ ...p }));
+    sp.orig   = photos.map(p => ({ ...p }));
+    sp.toDelete.clear();
+  });
+
+  renderHouseRuleContainer(container);
+  setPageBarIdle("houserule-bar-acts", enterHouseRuleEdit);
+}
+
+function renderHouseRuleContainer(container) {
+  container.innerHTML = "";
+  HOUSE_RULE_SECTIONS.forEach(ruleDef => container.appendChild(createHouseRuleSectionEl(ruleDef)));
+}
+
+function createHouseRuleSectionEl(ruleDef) {
+  const sp      = hrSP(ruleDef.id);
+  const editing = _houseRule.editing;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "a-section";
+
+  const header = document.createElement("div");
+  header.className = "a-section-header";
+  header.innerHTML = `<div class="a-title-row"><h2>${escHtml(ruleDef.title)}</h2></div>`;
+  wrapper.appendChild(header);
+
+  const grid = document.createElement("div");
+  grid.className = "a-grid";
+  wrapper.appendChild(grid);
+  refreshGrid(grid, sp, editing, false, { id: ruleDef.id, folder: ruleDef.folder });
+
+  return wrapper;
+}
+
+function enterHouseRuleEdit() {
+  _houseRule.editing = true;
+  const container = document.getElementById("houserule-container");
+  renderHouseRuleContainer(container);
+  setPageBarEditing("houserule-bar-acts", commitHouseRuleChanges, cancelHouseRuleEdit);
+}
+
+function cancelHouseRuleEdit() {
+  Object.values(_houseRule.secPhotos).forEach(sp => {
+    sp.photos.forEach(p => { if (p._previewUrl) URL.revokeObjectURL(p._previewUrl); });
+    sp.photos = sp.orig.map(p => ({ ...p }));
+    sp.toDelete.clear();
+  });
+  _houseRule.editing = false;
+  const container = document.getElementById("houserule-container");
+  renderHouseRuleContainer(container);
+  setPageBarIdle("houserule-bar-acts", enterHouseRuleEdit);
+}
+
+async function commitHouseRuleChanges() {
+  const commitBtn = document.querySelector("#houserule-bar-acts .a-btn-commit");
+  if (commitBtn) setBusy(commitBtn, true);
+  try {
+    let uploaded  = 0;
+    const totalNew    = HOUSE_RULE_SECTIONS.reduce((n, d) => n + hrSP(d.id).photos.filter(p => p._isNew).length, 0);
+    const savedPerRule = {};
+
+    for (const ruleDef of HOUSE_RULE_SECTIONS) {
+      const sp    = hrSP(ruleDef.id);
+      const saved = [];
+      for (const photo of sp.photos) {
+        if (photo._isNew) {
+          uploaded++;
+          if (totalNew > 1 && commitBtn) commitBtn.textContent = `アップロード中 ${uploaded}/${totalNew}…`;
+          const result = await cldUploadNew(photo._file, ruleDef.folder);
+          URL.revokeObjectURL(photo._previewUrl);
+          saved.push({ path: result.path, publicId: result.publicId, alt: photo.alt || "" });
+        } else {
+          saved.push({ path: photo.path, publicId: photo.publicId || null, alt: photo.alt || "" });
+        }
+      }
+      savedPerRule[ruleDef.id] = saved;
+    }
+
+    for (const ruleDef of HOUSE_RULE_SECTIONS) {
+      const sp = hrSP(ruleDef.id);
+      for (const pubId of sp.toDelete) {
+        try { await cldDestroy(pubId); } catch {}
+      }
+    }
+
+    const content = await loadPhotosJson();
+    if (!content.house_rule_photos) content.house_rule_photos = {};
+    HOUSE_RULE_SECTIONS.forEach(ruleDef => {
+      content.house_rule_photos[ruleDef.id] = savedPerRule[ruleDef.id] || [];
+    });
+    await savePhotosJson(content);
+
+    HOUSE_RULE_SECTIONS.forEach(ruleDef => {
+      const sp    = hrSP(ruleDef.id);
+      const saved = savedPerRule[ruleDef.id] || [];
+      sp.photos   = saved.map(p => ({ ...p }));
+      sp.orig     = saved.map(p => ({ ...p }));
+      sp.toDelete.clear();
+    });
+    _houseRule.editing = false;
+    const container = document.getElementById("houserule-container");
+    renderHouseRuleContainer(container);
+    setPageBarIdle("houserule-bar-acts", enterHouseRuleEdit);
     showToast("保存しました！");
   } catch (err) {
     showToast("エラー: " + err.message, true);
@@ -785,7 +1121,7 @@ function makeAddCard(sp, gridEl, isGallery, secDef) {
       });
     });
     inp.value = "";
-    const editing = isGallery ? _gallery.editing : _facility.editing;
+    // editing is always true when the add-card is visible; use the captured param
     refreshGrid(gridEl, sp, editing, isGallery, secDef);
   });
 

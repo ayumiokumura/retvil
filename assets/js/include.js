@@ -101,14 +101,11 @@ document.addEventListener("DOMContentLoaded", () => {
       let minimized  = false;
 
       function minimize() {
-        const offset = ctaFloat.offsetWidth + 24 - 68;
-        ctaFloat.style.transform = `translateX(${offset}px)`;
         ctaFloat.classList.add("minimized");
         minimized = true;
       }
 
       function restore() {
-        ctaFloat.style.transform = "translateX(0)";
         ctaFloat.classList.remove("minimized");
         minimized = false;
       }

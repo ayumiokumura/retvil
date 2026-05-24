@@ -29,61 +29,17 @@
     </div>
   </div>
 
-  <!-- バス・トイレ -->
-  <div class="facility-section">
-    <h3><span>🛁</span> <span data-ja="バス・トイレ" data-en="Bath &amp; Toilet">バス・トイレ</span></h3>
-    <div class="facility-with-photos">
-      <div class="facility-info">
-        <ul>
-          <li data-ja="温水洗浄便座（Washlet）" data-en="Washlet (warm water toilet seat)">温水洗浄便座（Washlet）</li>
-          <li data-ja="大型浴室（シャワー・給湯／追い炊き付き）― ご家族で一緒に入れます" data-en="Large bathroom with shower, hot water &amp; reheat function — spacious enough for the whole family">大型浴室（シャワー・給湯／追い炊き付き）― ご家族で一緒に入れます</li>
-          <li data-ja="シャンプー・コンディショナー・ボディシャンプー完備" data-en="Shampoo, conditioner &amp; body wash provided">シャンプー・コンディショナー・ボディシャンプー完備</li>
-          <li data-ja="バスタオル・フェイスタオル（人数分）" data-en="Bath towels &amp; face towels (for each guest)">バスタオル・フェイスタオル（人数分）</li>
-          <li data-ja="ヘアドライヤー" data-en="Hair dryer">ヘアドライヤー</li>
-          <li data-ja="乾燥機付洗濯機（無料）" data-en="Washer/dryer (free of charge)">乾燥機付洗濯機（無料）</li>
-          <li data-ja="洗剤・柔軟剤" data-en="Laundry detergent &amp; fabric softener">洗剤・柔軟剤</li>
-        </ul>
-        <p class="facility-note" data-ja="＊歯ブラシはプラスチックごみ削減の観点でご用意しておりません。各自お持ちください。" data-en="＊Toothbrushes are not provided in order to reduce plastic waste. Please bring your own.">
-          ＊歯ブラシはプラスチックごみ削減の観点でご用意しておりません。各自お持ちください。
-        </p>
-      </div>
-      <div class="facility-photo-row" data-facility-id="bath"></div>
-    </div>
-  </div>
-
-  <!-- エアコン -->
-  <div class="facility-section">
-    <h3><span>❄️</span> <span data-ja="エアコン" data-en="Air Conditioning">エアコン</span></h3>
-    <div class="facility-with-photos">
-      <div class="facility-info">
-        <p class="facility-text" data-ja="リビング・寝室1・寝室2 に各1台ずつ設置しています。" data-en="One unit installed in the living room, Bedroom 1, and Bedroom 2 respectively.">
-          リビング・寝室1・寝室2 に各1台ずつ設置しています。
-        </p>
-      </div>
-      <div class="facility-photo-row" data-facility-id="ac"></div>
-    </div>
-  </div>
-
-  <!-- 駐車場 -->
-  <div class="facility-section">
-    <h3><span>🚗</span> <span data-ja="駐車場" data-en="Parking">駐車場</span></h3>
-    <div class="facility-with-photos">
-      <div class="facility-info">
-        <p class="facility-text" data-ja="3台まで駐車可能です。施設前に縦列でご利用いただけます。" data-en="Up to 3 cars can be parked in tandem in front of the facility.">3台まで駐車可能です。施設前に縦列でご利用いただけます。</p>
-      </div>
-      <div class="facility-photo-row" data-facility-id="parking"></div>
-    </div>
-  </div>
+  <!-- 動的施設セクション（photos.jsonから読み込み） -->
+  <div id="facility-sections-container"></div>
 
 
   <!-- ハウスルール -->
   <div class="facility-section">
-    <h3><span>📋</span> <span data-ja="ハウスルール" data-en="House Rules">ハウスルール</span></h3>
+    <h3><span data-ja="ハウスルール" data-en="House Rules">ハウスルール</span></h3>
     <div class="feature-list" style="margin-top:0">
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="bbq">
         <div class="feature-header">
-          <span class="feature-icon">🍖</span>
           <div>
             <h3 class="feature-title" data-ja="BBQについて" data-en="BBQ">BBQについて</h3>
             <p class="feature-subtitle" data-ja="デッキのガスグリルは使用料無料" data-en="Gas grill on the deck is free to use">デッキのガスグリルは使用料無料</p>
@@ -99,9 +55,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="garden">
         <div class="feature-header">
-          <span class="feature-icon">🌿</span>
           <div>
             <h3 class="feature-title" data-ja="庭・デッキでの過ごし方" data-en="Garden &amp; Deck">庭・デッキでの過ごし方</h3>
             <p class="feature-subtitle" data-ja="22:00 以降は室内でお楽しみください" data-en="After 22:00, please enjoy indoors">22:00 以降は室内でお楽しみください</p>
@@ -117,9 +72,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="smoking">
         <div class="feature-header">
-          <span class="feature-icon">🚬</span>
           <div>
             <h3 class="feature-title" data-ja="喫煙について" data-en="Smoking">喫煙について</h3>
             <p class="feature-subtitle" data-ja="喫煙場所は2か所。室内は禁煙です" data-en="2 designated areas — no smoking indoors">喫煙場所は2か所。室内は禁煙です</p>
@@ -134,9 +88,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="garbage">
         <div class="feature-header">
-          <span class="feature-icon">🗑️</span>
           <div>
             <h3 class="feature-title" data-ja="ゴミの分別" data-en="Garbage Sorting">ゴミの分別</h3>
             <p class="feature-subtitle" data-ja="ゴミ箱の表示に従ってください" data-en="Please follow the labels on the bins">ゴミ箱の表示に従ってください</p>
@@ -152,9 +105,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="pet">
         <div class="feature-header">
-          <span class="feature-icon">🐕</span>
           <div>
             <h3 class="feature-title" data-ja="ペットについて" data-en="Pets">ペットについて</h3>
             <p class="feature-subtitle" data-ja="2匹まで / 一滞在 5,000円 / 大型犬OK" data-en="Up to 2 pets / ¥5,000 per stay / Large dogs OK">2匹まで / 一滞在 5,000円 / 大型犬OK</p>
@@ -172,9 +124,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="insects">
         <div class="feature-header">
-          <span class="feature-icon">🦟</span>
           <div>
             <h3 class="feature-title" data-ja="虫について" data-en="Insects">虫について</h3>
             <p class="feature-subtitle" data-ja="ここは森の中。虫は森の先住民です" data-en="You are in the forest — insects are its original residents">ここは森の中。虫は森の先住民です</p>
@@ -190,9 +141,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="appliances">
         <div class="feature-header">
-          <span class="feature-icon">🛁</span>
           <div>
             <h3 class="feature-title" data-ja="洗濯機・リモコン・ナイトライト" data-en="Washer, Remotes &amp; Night Light">洗濯機・リモコン・ナイトライト</h3>
             <p class="feature-subtitle" data-ja="各種備品のご利用について" data-en="How to use various fixtures">各種備品のご利用について</p>
@@ -207,9 +157,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="cookware">
         <div class="feature-header">
-          <span class="feature-icon">🍳</span>
           <div>
             <h3 class="feature-title" data-ja="調理器具・食器・冷蔵庫" data-en="Cookware, Tableware &amp; Fridge">調理器具・食器・冷蔵庫</h3>
             <p class="feature-subtitle" data-ja="使ったものは洗ってキッチンに置いてください" data-en="Please wash items and leave them in the kitchen">使ったものは洗ってキッチンに置いてください</p>
@@ -225,9 +174,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="bedding">
         <div class="feature-header">
-          <span class="feature-icon">🛏</span>
           <div>
             <h3 class="feature-title" data-ja="寝具・トイレ" data-en="Bedding &amp; Toilet">寝具・トイレ</h3>
             <p class="feature-subtitle" data-ja="予約人数分の寝具をご利用ください" data-en="Please use the bedding allocated for your number of guests">予約人数分の寝具をご利用ください</p>
@@ -242,9 +190,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="photography">
         <div class="feature-header">
-          <span class="feature-icon">📷</span>
           <div>
             <h3 class="feature-title" data-ja="撮影利用について" data-en="Photography &amp; Recording">撮影利用について</h3>
             <p class="feature-subtitle" data-ja="記念撮影・SNS投稿は自由にどうぞ" data-en="Personal photos &amp; SNS posting are welcome">記念撮影・SNS投稿は自由にどうぞ</p>
@@ -258,9 +205,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="checklist">
         <div class="feature-header">
-          <span class="feature-icon">🎒</span>
           <div>
             <h3 class="feature-title" data-ja="ご用意いただくもの" data-en="What to Bring">ご用意いただくもの</h3>
             <p class="feature-subtitle" data-ja="施設にないものリスト" data-en="Items not provided at the facility">施設にないものリスト</p>
@@ -283,9 +229,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="notes">
         <div class="feature-header">
-          <span class="feature-icon">📋</span>
           <div>
             <h3 class="feature-title" data-ja="ご注意事項まとめ" data-en="Important Notes">ご注意事項まとめ</h3>
             <p class="feature-subtitle" data-ja="快適なご滞在のために" data-en="For a comfortable stay">快適なご滞在のために</p>
@@ -305,9 +250,8 @@
         </div>
       </div>
 
-      <div class="feature-card">
+      <div class="feature-card" data-rule-id="emergency">
         <div class="feature-header">
-          <span class="feature-icon">🚨</span>
           <div>
             <h3 class="feature-title" data-ja="緊急連絡先" data-en="Emergency Contacts">緊急連絡先</h3>
             <p class="feature-subtitle" data-ja="Emergency Contacts" data-en="Emergency Contacts">Emergency Contacts</p>
@@ -331,19 +275,130 @@
 
 <script>
 const _CLD = "https://res.cloudinary.com/dlbkklzyo/raw/upload/retvil/data/photos.json";
+
+const _FAC_DEFAULTS = {
+  bath: {
+    title_ja: "バス・トイレ", title_en: "Bath & Toilet",
+    desc_ja: "温水洗浄便座（Washlet）\n大型浴室（シャワー・給湯／追い炊き付き）― ご家族で一緒に入れます\nシャンプー・コンディショナー・ボディシャンプー完備\nバスタオル・フェイスタオル（人数分）\nヘアドライヤー\n乾燥機付洗濯機（無料）\n洗剤・柔軟剤",
+    desc_en: "Washlet (warm water toilet seat)\nLarge bathroom with shower, hot water & reheat function — spacious enough for the whole family\nShampoo, conditioner & body wash provided\nBath towels & face towels (for each guest)\nHair dryer\nWasher/dryer (free of charge)\nLaundry detergent & fabric softener",
+    note_ja: "＊歯ブラシはプラスチックごみ削減の観点でご用意しておりません。各自お持ちください。",
+    note_en: "＊Toothbrushes are not provided in order to reduce plastic waste. Please bring your own."
+  },
+  ac: {
+    title_ja: "エアコン", title_en: "Air Conditioning",
+    desc_ja: "リビング・寝室1・寝室2 に各1台ずつ設置しています。",
+    desc_en: "One unit installed in the living room, Bedroom 1, and Bedroom 2 respectively.",
+    note_ja: "", note_en: ""
+  },
+  parking: {
+    title_ja: "駐車場", title_en: "Parking",
+    desc_ja: "3台まで駐車可能です。施設前に縦列でご利用いただけます。",
+    desc_en: "Up to 3 cars can be parked in tandem in front of the facility.",
+    note_ja: "", note_en: ""
+  }
+};
+
 (async () => {
   let data;
   try { const r = await fetch(_CLD, { cache: "no-cache" }); if (r.ok) data = await r.json(); } catch {}
   if (!data) return;
-  (() => {
+
+  const container = document.getElementById("facility-sections-container");
+  if (container) {
     (data.facility_sections || []).forEach(sec => {
-      const row = document.querySelector(`[data-facility-id="${sec.id}"]`);
-      if (!row || !sec.photos || !sec.photos.length) return;
-      row.innerHTML = sec.photos.map(p =>
-        `<img src="${p.path}" alt="${p.alt || ''}">`
-      ).join('');
+      const d = _FAC_DEFAULTS[sec.id] || {};
+      const titleJa = sec.title_ja !== undefined ? sec.title_ja : (d.title_ja || sec.title || sec.id);
+      const titleEn = sec.title_en !== undefined ? sec.title_en : (d.title_en || titleJa);
+      const rawDescJa = sec.desc_ja !== undefined ? sec.desc_ja : (d.desc_ja || '');
+      const rawDescEn = sec.desc_en !== undefined ? sec.desc_en : (d.desc_en || '');
+      const noteJa = sec.note_ja !== undefined ? sec.note_ja : (d.note_ja || '');
+      const noteEn = sec.note_en !== undefined ? sec.note_en : (d.note_en || '');
+      const descJa = rawDescJa.split('\n').filter(l => l.trim());
+      const descEn = rawDescEn.split('\n').filter(l => l.trim());
+      const photos = sec.photos || [];
+      const lang = window.rvLang || 'ja';
+
+      const div = document.createElement('div');
+      div.className = 'facility-section';
+
+      const h3 = document.createElement('h3');
+      h3.setAttribute('data-ja', titleJa);
+      h3.setAttribute('data-en', titleEn);
+      h3.textContent = lang === 'en' ? titleEn : titleJa;
+      div.appendChild(h3);
+
+      const withPhotos = document.createElement('div');
+      withPhotos.className = 'facility-with-photos';
+
+      const info = document.createElement('div');
+      info.className = 'facility-info';
+
+      if (descJa.length > 1) {
+        const ul = document.createElement('ul');
+        descJa.forEach((item, i) => {
+          const li = document.createElement('li');
+          li.setAttribute('data-ja', item);
+          li.setAttribute('data-en', descEn[i] || item);
+          li.textContent = lang === 'en' ? (descEn[i] || item) : item;
+          ul.appendChild(li);
+        });
+        info.appendChild(ul);
+      } else if (descJa.length === 1) {
+        const p = document.createElement('p');
+        p.className = 'facility-text';
+        p.setAttribute('data-ja', descJa[0]);
+        p.setAttribute('data-en', descEn[0] || descJa[0]);
+        p.textContent = lang === 'en' ? (descEn[0] || descJa[0]) : descJa[0];
+        info.appendChild(p);
+      }
+
+      if (noteJa) {
+        const note = document.createElement('p');
+        note.className = 'facility-note';
+        note.setAttribute('data-ja', noteJa);
+        note.setAttribute('data-en', noteEn || noteJa);
+        note.textContent = lang === 'en' ? (noteEn || noteJa) : noteJa;
+        info.appendChild(note);
+      }
+
+      withPhotos.appendChild(info);
+
+      if (photos.length) {
+        const photoRow = document.createElement('div');
+        photoRow.className = 'facility-photo-row';
+        photos.forEach(p => {
+          const img = document.createElement('img');
+          img.src = p.path;
+          img.alt = p.alt || '';
+          photoRow.appendChild(img);
+        });
+        withPhotos.appendChild(photoRow);
+      }
+
+      div.appendChild(withPhotos);
+      container.appendChild(div);
     });
-  })();
+
+    if (window.applyLang) window.applyLang(window.rvLang || 'ja');
+  }
+
+  const hrPhotos = data.house_rule_photos || {};
+  Object.entries(hrPhotos).forEach(([ruleId, photos]) => {
+    if (!photos || !photos.length) return;
+    const card = document.querySelector(`[data-rule-id="${ruleId}"]`);
+    if (!card) return;
+    const body = card.querySelector('.feature-body');
+    if (!body) return;
+    const photoRow = document.createElement('div');
+    photoRow.className = 'house-rule-photo-row';
+    photos.forEach(p => {
+      const img = document.createElement('img');
+      img.src = p.path;
+      img.alt = p.alt || '';
+      photoRow.appendChild(img);
+    });
+    body.insertBefore(photoRow, body.firstChild);
+  });
 })();
 </script>
 

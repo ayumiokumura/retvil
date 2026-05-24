@@ -160,6 +160,47 @@
     .a-btn-replace:hover    { background: #f5f0ea; }
     .a-btn-replace:disabled { opacity: .5; cursor: default; }
 
+    .a-desc-block {
+      padding: 12px 0 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .a-desc-label {
+      font-size: .76rem;
+      color: #888;
+      margin-top: 10px;
+    }
+
+    .a-desc-label:first-child { margin-top: 0; }
+
+    .a-textarea {
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: .82rem;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      line-height: 1.6;
+    }
+
+    .a-textarea:focus { border-color: #8B7355; }
+
+    .a-input-note {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: .82rem;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .a-input-note:focus { border-color: #8B7355; }
+
     /* ---- Grid ---- */
     .a-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
 
@@ -290,7 +331,7 @@
     <!-- ===== 必須写真 ===== -->
     <div class="a-page-section">
       <div class="a-page-bar">
-        <div class="a-page-header">🔒 必須写真（差し替えのみ）</div>
+        <div class="a-page-header">必須写真（差し替えのみ）</div>
       </div>
       <div id="required-grid" class="a-grid"></div>
     </div>
@@ -298,7 +339,7 @@
     <!-- ===== 基本情報ページ ===== -->
     <div class="a-page-section">
       <div class="a-page-bar">
-        <div class="a-page-header">📋 基本情報ページ（facilities.html）</div>
+        <div class="a-page-header">基本情報ページ（facilities.html）</div>
         <div class="a-page-bar-acts" id="facility-bar-acts"></div>
       </div>
 
@@ -306,10 +347,19 @@
       <div id="facilities-container"></div>
     </div>
 
+    <!-- ===== ハウスルール写真 ===== -->
+    <div class="a-page-section">
+      <div class="a-page-bar">
+        <div class="a-page-header">ハウスルール写真</div>
+        <div class="a-page-bar-acts" id="houserule-bar-acts"></div>
+      </div>
+      <div id="houserule-container"></div>
+    </div>
+
     <!-- ===== 写真ページ ===== -->
     <div class="a-page-section">
       <div class="a-page-bar">
-        <div class="a-page-header">🖼️ 写真ページ（photos.html）</div>
+        <div class="a-page-header">写真ページ（photos.html）</div>
         <div class="a-page-bar-acts" id="gallery-bar-acts"></div>
       </div>
       <div id="gallery-container"></div>
