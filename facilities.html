@@ -399,6 +399,16 @@ const _FAC_DEFAULTS = {
     });
     body.insertBefore(photoRow, body.firstChild);
   });
+
+  if (data.house_rule_order && data.house_rule_order.length) {
+    const featureList = document.querySelector('.feature-list');
+    if (featureList) {
+      data.house_rule_order.forEach(ruleId => {
+        const card = featureList.querySelector(`[data-rule-id="${ruleId}"]`);
+        if (card) featureList.appendChild(card);
+      });
+    }
+  }
 })();
 </script>
 

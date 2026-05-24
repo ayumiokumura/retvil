@@ -273,7 +273,7 @@
     }
     #creds-change-btn:hover { border-color: rgba(255,255,255,.55); color: #fff; }
 
-    /* Drag handle overlay */
+    /* Drag handle overlay (photo card) */
     .a-drag-handle {
       position: absolute; top: 6px; right: 6px;
       width: 24px; height: 24px; border-radius: 5px;
@@ -281,6 +281,20 @@
       font-size: .9rem; display: flex; align-items: center; justify-content: center;
       cursor: grab; z-index: 2;
     }
+
+    /* Drag bar for section reorder */
+    .a-sec-drag-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 5px 10px; margin-bottom: 10px;
+      background: #f5f0ea; border-radius: 6px;
+      border: 1px dashed #c0b89a;
+      cursor: grab; user-select: none; color: #8B7355;
+      font-size: .78rem;
+    }
+    .a-sec-drag-bar:hover { background: #ede5d8; border-color: #8B7355; }
+    .a-sec-drag-bar:active { cursor: grabbing; }
+    .a-section.a-sec-dragging { opacity: 0.4; }
+    .a-section.a-sec-drag-over { outline: 2px dashed #8B7355; border-radius: 8px; outline-offset: 2px; }
 
     .a-info   { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
     .a-desc   { font-size: .85rem; font-weight: 600; }

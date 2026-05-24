@@ -88,7 +88,9 @@ const _facility = {
 
 const _houseRule = {
   editing: false,
-  secPhotos: {}
+  secPhotos: {},
+  order: [],
+  origOrder: []
 };
 
 function hrSP(id) {
@@ -478,11 +480,11 @@ async function renderFacilities() {
 
 function renderFacilityContainer(container) {
   container.innerHTML = "";
-  _facility.secDefs.forEach(secDef => container.appendChild(createFacilitySectionEl(secDef)));
+  _facility.secDefs.forEach((secDef, idx) => container.appendChild(createFacilitySectionEl(secDef, idx)));
   if (_facility.editing) container.appendChild(createAddFacilitySectionCard(container));
 }
 
-function createFacilitySectionEl(secDef) {
+function createFacilitySectionEl(secDef, idx) {
   const sp      = facSP(secDef.id);
   const editing = _facility.editing;
 
@@ -542,6 +544,14 @@ function createFacilitySectionEl(secDef) {
   grid.className = "a-grid";
   wrapper.appendChild(grid);
   refreshGrid(grid, sp, editing, false, secDef);
+
+  if (editing) {
+    addSecDragBehavior(wrapper, idx, 'facility', (from, to) => {
+      const [moved] = _facility.secDefs.splice(from, 1);
+      _facility.secDefs.splice(to, 0, moved);
+      renderFacilityContainer(document.getElementById("facilities-container"));
+    });
+  }
 
   return wrapper;
 }
@@ -702,16 +712,30 @@ async function renderHouseRules() {
     sp.toDelete.clear();
   });
 
+  const allIds = HOUSE_RULE_SECTIONS.map(s => s.id);
+  const savedOrder = photosData.house_rule_order;
+  if (savedOrder && savedOrder.length) {
+    const saved = savedOrder.filter(id => allIds.includes(id));
+    const missing = allIds.filter(id => !saved.includes(id));
+    _houseRule.order = [...saved, ...missing];
+  } else {
+    _houseRule.order = [...allIds];
+  }
+  _houseRule.origOrder = [..._houseRule.order];
+
   renderHouseRuleContainer(container);
   setPageBarIdle("houserule-bar-acts", enterHouseRuleEdit);
 }
 
 function renderHouseRuleContainer(container) {
   container.innerHTML = "";
-  HOUSE_RULE_SECTIONS.forEach(ruleDef => container.appendChild(createHouseRuleSectionEl(ruleDef)));
+  _houseRule.order
+    .map(id => HOUSE_RULE_SECTIONS.find(s => s.id === id))
+    .filter(Boolean)
+    .forEach((ruleDef, idx) => container.appendChild(createHouseRuleSectionEl(ruleDef, idx)));
 }
 
-function createHouseRuleSectionEl(ruleDef) {
+function createHouseRuleSectionEl(ruleDef, idx) {
   const sp      = hrSP(ruleDef.id);
   const editing = _houseRule.editing;
 
@@ -727,6 +751,14 @@ function createHouseRuleSectionEl(ruleDef) {
   grid.className = "a-grid";
   wrapper.appendChild(grid);
   refreshGrid(grid, sp, editing, false, { id: ruleDef.id, folder: ruleDef.folder });
+
+  if (editing) {
+    addSecDragBehavior(wrapper, idx, 'houserule', (from, to) => {
+      const [moved] = _houseRule.order.splice(from, 1);
+      _houseRule.order.splice(to, 0, moved);
+      renderHouseRuleContainer(document.getElementById("houserule-container"));
+    });
+  }
 
   return wrapper;
 }
@@ -744,6 +776,7 @@ function cancelHouseRuleEdit() {
     sp.photos = sp.orig.map(p => ({ ...p }));
     sp.toDelete.clear();
   });
+  _houseRule.order   = [..._houseRule.origOrder];
   _houseRule.editing = false;
   const container = document.getElementById("houserule-container");
   renderHouseRuleContainer(container);
@@ -787,6 +820,7 @@ async function commitHouseRuleChanges() {
     HOUSE_RULE_SECTIONS.forEach(ruleDef => {
       content.house_rule_photos[ruleDef.id] = savedPerRule[ruleDef.id] || [];
     });
+    content.house_rule_order = _houseRule.order;
     await savePhotosJson(content);
 
     HOUSE_RULE_SECTIONS.forEach(ruleDef => {
@@ -796,7 +830,8 @@ async function commitHouseRuleChanges() {
       sp.orig     = saved.map(p => ({ ...p }));
       sp.toDelete.clear();
     });
-    _houseRule.editing = false;
+    _houseRule.origOrder = [..._houseRule.order];
+    _houseRule.editing   = false;
     const container = document.getElementById("houserule-container");
     renderHouseRuleContainer(container);
     setPageBarIdle("houserule-bar-acts", enterHouseRuleEdit);
@@ -842,7 +877,7 @@ async function renderGallery() {
 
 function renderGalleryContainer(container) {
   container.innerHTML = "";
-  _gallery.secDefs.forEach(secDef => container.appendChild(createSectionEl(true, secDef)));
+  _gallery.secDefs.forEach((secDef, idx) => container.appendChild(createSectionEl(true, secDef, idx)));
   if (_gallery.editing) container.appendChild(createAddSectionCard(container));
 }
 
@@ -943,7 +978,7 @@ async function commitGalleryChanges() {
 // セクション要素作成（gallery / facility 共通）
 // ================================================================
 
-function createSectionEl(isGallery, secDef) {
+function createSectionEl(isGallery, secDef, idx) {
   const sp      = isGallery ? galSP(secDef.id) : facSP(secDef.id);
   const editing = isGallery ? _gallery.editing  : _facility.editing;
   const isNew   = isGallery && !_gallery.origSecDefs.some(s => s.id === secDef.id);
@@ -983,6 +1018,14 @@ function createSectionEl(isGallery, secDef) {
   grid.className = "a-grid";
   wrapper.appendChild(grid);
   refreshGrid(grid, sp, editing, isGallery, secDef);
+
+  if (isGallery && editing) {
+    addSecDragBehavior(wrapper, idx, 'gallery', (from, to) => {
+      const [moved] = _gallery.secDefs.splice(from, 1);
+      _gallery.secDefs.splice(to, 0, moved);
+      renderGalleryContainer(document.getElementById("gallery-container"));
+    });
+  }
 
   return wrapper;
 }
@@ -1032,7 +1075,7 @@ function createAddSectionCard(container) {
       const secDef = { id: newId, title, title_en, folder: `gallery/${newId}` };
       _gallery.secDefs.push(secDef);
       _gallery.secPhotos[newId] = { photos: [], orig: [], toDelete: new Set() };
-      container.insertBefore(createSectionEl(true, secDef), card);
+      container.insertBefore(createSectionEl(true, secDef, _gallery.secDefs.length - 1), card);
       showBtn();
     });
   };
@@ -1045,8 +1088,50 @@ function createAddSectionCard(container) {
 // グリッド描画
 // ================================================================
 
-let _dragIdx   = -1;
-let _dragSecId = null;
+let _dragIdx    = -1;
+let _dragSecId  = null;
+let _secDragIdx  = -1;
+let _secDragType = null;
+
+function addSecDragBehavior(wrapper, idx, type, reorderFn) {
+  const bar = document.createElement("div");
+  bar.className = "a-sec-drag-bar";
+  bar.innerHTML = "⠿ ドラッグして並び替え";
+  wrapper.prepend(bar);
+
+  bar.setAttribute("draggable", "true");
+  bar.addEventListener("dragstart", e => {
+    _secDragIdx = idx;
+    _secDragType = type;
+    wrapper.classList.add("a-sec-dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.stopPropagation();
+  });
+  bar.addEventListener("dragend", () => {
+    wrapper.classList.remove("a-sec-dragging");
+    _secDragIdx = -1;
+    _secDragType = null;
+  });
+  wrapper.addEventListener("dragover", e => {
+    if (_secDragType !== type || _secDragIdx === idx || _secDragIdx < 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    wrapper.classList.add("a-sec-drag-over");
+  });
+  wrapper.addEventListener("dragleave", e => {
+    if (!wrapper.contains(e.relatedTarget)) wrapper.classList.remove("a-sec-drag-over");
+  });
+  wrapper.addEventListener("drop", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    wrapper.classList.remove("a-sec-drag-over");
+    if (_secDragType !== type || _secDragIdx < 0 || _secDragIdx === idx) return;
+    const from = _secDragIdx, to = idx;
+    _secDragIdx = -1;
+    _secDragType = null;
+    reorderFn(from, to);
+  });
+}
 
 function refreshGrid(gridEl, sp, editing, isGallery, secDef) {
   gridEl.innerHTML = "";
