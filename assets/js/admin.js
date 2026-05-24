@@ -666,6 +666,11 @@ async function commitFacilityChanges() {
       s.note_en  = secDef.note_en;
       s.photos   = savedPerSec[secDef.id];
     }
+    const facOrder = _facility.secDefs.map(s => s.id);
+    content.facility_sections.sort((a, b) => {
+      const ia = facOrder.indexOf(a.id), ib = facOrder.indexOf(b.id);
+      return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+    });
     await savePhotosJson(content);
 
     _facility.origSecDefs = _facility.secDefs.map(s => ({ ...s }));
