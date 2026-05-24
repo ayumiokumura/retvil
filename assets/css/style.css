@@ -583,8 +583,8 @@ body {
 }
 
 .house-rule-photo-row img {
-  flex: 1 1 auto;
-  min-width: 120px;
+  flex: 1 1 160px;
+  max-width: 220px;
   height: 140px;
   object-fit: cover;
   border-radius: 6px;
