@@ -504,6 +504,11 @@ function createFacilitySectionEl(secDef, idx) {
     inputs.querySelector('.a-input-title').addEventListener('input', e => { secDef.title_ja = e.target.value; });
     inputs.querySelector('.a-input-title-en').addEventListener('input', e => { secDef.title_en = e.target.value; });
     titleRow.appendChild(inputs);
+    titleRow.appendChild(makeSecMoveButtons(idx, _facility.secDefs.length, (from, to) => {
+      const [moved] = _facility.secDefs.splice(from, 1);
+      _facility.secDefs.splice(to, 0, moved);
+      renderFacilityContainer(document.getElementById("facilities-container"));
+    }));
 
     const delBtn = document.createElement("button");
     delBtn.className   = "a-btn-del-section";
@@ -544,14 +549,6 @@ function createFacilitySectionEl(secDef, idx) {
   grid.className = "a-grid";
   wrapper.appendChild(grid);
   refreshGrid(grid, sp, editing, false, secDef);
-
-  if (editing) {
-    addSecDragBehavior(wrapper, idx, 'facility', (from, to) => {
-      const [moved] = _facility.secDefs.splice(from, 1);
-      _facility.secDefs.splice(to, 0, moved);
-      renderFacilityContainer(document.getElementById("facilities-container"));
-    });
-  }
 
   return wrapper;
 }
@@ -745,20 +742,19 @@ function createHouseRuleSectionEl(ruleDef, idx) {
   const header = document.createElement("div");
   header.className = "a-section-header";
   header.innerHTML = `<div class="a-title-row"><h2>${escHtml(ruleDef.title)}</h2></div>`;
+  if (editing) {
+    header.appendChild(makeSecMoveButtons(idx, _houseRule.order.length, (from, to) => {
+      const [moved] = _houseRule.order.splice(from, 1);
+      _houseRule.order.splice(to, 0, moved);
+      renderHouseRuleContainer(document.getElementById("houserule-container"));
+    }));
+  }
   wrapper.appendChild(header);
 
   const grid = document.createElement("div");
   grid.className = "a-grid";
   wrapper.appendChild(grid);
   refreshGrid(grid, sp, editing, false, { id: ruleDef.id, folder: ruleDef.folder });
-
-  if (editing) {
-    addSecDragBehavior(wrapper, idx, 'houserule', (from, to) => {
-      const [moved] = _houseRule.order.splice(from, 1);
-      _houseRule.order.splice(to, 0, moved);
-      renderHouseRuleContainer(document.getElementById("houserule-container"));
-    });
-  }
 
   return wrapper;
 }
@@ -1005,6 +1001,11 @@ function createSectionEl(isGallery, secDef, idx) {
   header.appendChild(titleRow);
 
   if (isGallery && editing) {
+    header.appendChild(makeSecMoveButtons(idx, _gallery.secDefs.length, (from, to) => {
+      const [moved] = _gallery.secDefs.splice(from, 1);
+      _gallery.secDefs.splice(to, 0, moved);
+      renderGalleryContainer(document.getElementById("gallery-container"));
+    }));
     const delSecBtn = document.createElement("button");
     delSecBtn.className   = "a-btn-del-section";
     delSecBtn.textContent = "🗑️ カテゴリーを削除";
@@ -1018,14 +1019,6 @@ function createSectionEl(isGallery, secDef, idx) {
   grid.className = "a-grid";
   wrapper.appendChild(grid);
   refreshGrid(grid, sp, editing, isGallery, secDef);
-
-  if (isGallery && editing) {
-    addSecDragBehavior(wrapper, idx, 'gallery', (from, to) => {
-      const [moved] = _gallery.secDefs.splice(from, 1);
-      _gallery.secDefs.splice(to, 0, moved);
-      renderGalleryContainer(document.getElementById("gallery-container"));
-    });
-  }
 
   return wrapper;
 }
@@ -1088,49 +1081,27 @@ function createAddSectionCard(container) {
 // グリッド描画
 // ================================================================
 
-let _dragIdx    = -1;
-let _dragSecId  = null;
-let _secDragIdx  = -1;
-let _secDragType = null;
+let _dragIdx   = -1;
+let _dragSecId = null;
 
-function addSecDragBehavior(wrapper, idx, type, reorderFn) {
-  const bar = document.createElement("div");
-  bar.className = "a-sec-drag-bar";
-  bar.innerHTML = "⠿ ドラッグして並び替え";
-  wrapper.prepend(bar);
-
-  bar.setAttribute("draggable", "true");
-  bar.addEventListener("dragstart", e => {
-    _secDragIdx = idx;
-    _secDragType = type;
-    wrapper.classList.add("a-sec-dragging");
-    e.dataTransfer.effectAllowed = "move";
-    e.stopPropagation();
-  });
-  bar.addEventListener("dragend", () => {
-    wrapper.classList.remove("a-sec-dragging");
-    _secDragIdx = -1;
-    _secDragType = null;
-  });
-  wrapper.addEventListener("dragover", e => {
-    if (_secDragType !== type || _secDragIdx === idx || _secDragIdx < 0) return;
-    e.preventDefault();
-    e.stopPropagation();
-    wrapper.classList.add("a-sec-drag-over");
-  });
-  wrapper.addEventListener("dragleave", e => {
-    if (!wrapper.contains(e.relatedTarget)) wrapper.classList.remove("a-sec-drag-over");
-  });
-  wrapper.addEventListener("drop", e => {
-    e.preventDefault();
-    e.stopPropagation();
-    wrapper.classList.remove("a-sec-drag-over");
-    if (_secDragType !== type || _secDragIdx < 0 || _secDragIdx === idx) return;
-    const from = _secDragIdx, to = idx;
-    _secDragIdx = -1;
-    _secDragType = null;
-    reorderFn(from, to);
-  });
+function makeSecMoveButtons(idx, total, swapFn) {
+  const wrap = document.createElement("div");
+  wrap.className = "a-sec-move-btns";
+  const upBtn = document.createElement("button");
+  upBtn.className   = "a-btn-sec-move";
+  upBtn.textContent = "↑";
+  upBtn.title       = "上へ移動";
+  upBtn.disabled    = (idx === 0);
+  upBtn.addEventListener("click", () => swapFn(idx, idx - 1));
+  const downBtn = document.createElement("button");
+  downBtn.className   = "a-btn-sec-move";
+  downBtn.textContent = "↓";
+  downBtn.title       = "下へ移動";
+  downBtn.disabled    = (idx === total - 1);
+  downBtn.addEventListener("click", () => swapFn(idx, idx + 1));
+  wrap.appendChild(upBtn);
+  wrap.appendChild(downBtn);
+  return wrap;
 }
 
 function refreshGrid(gridEl, sp, editing, isGallery, secDef) {
@@ -1230,8 +1201,7 @@ function makeAddCard(sp, gridEl, isGallery, secDef) {
       });
     });
     inp.value = "";
-    // editing is always true when the add-card is visible; use the captured param
-    refreshGrid(gridEl, sp, editing, isGallery, secDef);
+    refreshGrid(gridEl, sp, true, isGallery, secDef);
   });
 
   return card;
