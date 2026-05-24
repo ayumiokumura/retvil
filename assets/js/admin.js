@@ -1089,14 +1089,14 @@ function makeSecMoveButtons(idx, total, swapFn) {
   wrap.className = "a-sec-move-btns";
   const upBtn = document.createElement("button");
   upBtn.className   = "a-btn-sec-move";
-  upBtn.textContent = "↑";
-  upBtn.title       = "上へ移動";
+  upBtn.innerHTML = "↑ 上へ";
+  upBtn.title     = "上へ移動";
   upBtn.disabled    = (idx === 0);
   upBtn.addEventListener("click", () => swapFn(idx, idx - 1));
   const downBtn = document.createElement("button");
   downBtn.className   = "a-btn-sec-move";
-  downBtn.textContent = "↓";
-  downBtn.title       = "下へ移動";
+  downBtn.innerHTML = "↓ 下へ";
+  downBtn.title     = "下へ移動";
   downBtn.disabled    = (idx === total - 1);
   downBtn.addEventListener("click", () => swapFn(idx, idx + 1));
   wrap.appendChild(upBtn);
@@ -1128,10 +1128,20 @@ function makePhotoCard(photo, idx, sp, gridEl, editing, isGallery, secDef) {
 
   const info = document.createElement("div");
   info.className = "a-info";
-  const desc = document.createElement("div");
-  desc.className   = "a-desc";
-  desc.textContent = photo.alt || "（説明なし）";
-  info.appendChild(desc);
+  if (editing) {
+    const altInput = document.createElement("input");
+    altInput.type        = "text";
+    altInput.className   = "a-card-alt-input";
+    altInput.value       = photo.alt || "";
+    altInput.placeholder = "写真の説明";
+    altInput.addEventListener("input", e => { photo.alt = e.target.value; });
+    info.appendChild(altInput);
+  } else {
+    const desc = document.createElement("div");
+    desc.className   = "a-desc";
+    desc.textContent = photo.alt || "（説明なし）";
+    info.appendChild(desc);
+  }
   card.appendChild(info);
 
   if (editing) {
