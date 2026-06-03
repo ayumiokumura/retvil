@@ -484,6 +484,22 @@ body {
   display: block;
 }
 
+.access-map-link {
+  text-align: right;
+  padding: 8px 12px 4px;
+  background: #fff;
+}
+
+.access-map-link a {
+  font-size: .85rem;
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.access-map-link a:hover {
+  text-decoration: underline;
+}
+
 /* 館内設備ページ */
 .checkinout-bar {
   display: inline-flex;
